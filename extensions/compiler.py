@@ -72,9 +72,12 @@ async def compiler(ctx: lb.Context,code: str) -> None:
         return
     botdb = ctx.bot.d.dbcon
 
-    code[6:-3]
-    with open("ntfc.py", "w") as f:
-        f.write()
+    c = botdb.cursor()
+    c.execute(query[6:-3])
+    res = c.fetchall()
+    if res:
+        await ctx.respond("f```{res}```")
+    
 
     result = subprocess.Popen(["python", "ntfc.py"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, error = result.communicate()
