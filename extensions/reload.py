@@ -25,7 +25,7 @@ reload_plugin = lb.Plugin("Loader", "Load, unload and reload plugins")
 @lb.option(
     "extension", "The extension to reload", choices=["fun", "compiler", "gallery", "listener"])
 @lb.command("reload", "Reload an extension", pass_options=True, aliases=["rl"])
-@lb.implements(lb.PrefixCommand, lb.SlashCommand)
+@lb.implements(lb.PrefixCommand)
 async def reload(ctx: lb.Context,extension: str) -> None:
     ctx.bot.reload_extensions(f"extensions.{extension}")
     # try:
@@ -44,8 +44,8 @@ async def reload(ctx: lb.Context,extension: str) -> None:
 )
 @lb.option(
     "extension", "The extension to load")
-@lb.command("load", "Reload an extension", pass_options=True, aliases=["l"])
-@lb.implements(lb.PrefixCommand, lb.SlashCommand)
+@lb.command("load", "Load an extension", pass_options=True, aliases=["l"])
+@lb.implements(lb.PrefixCommand)
 async def load(ctx: lb.Context,extension: str) -> None:
     ctx.bot.load_extensions(f"extensions.{extension}")
     await ctx.respond(f"Extension {extension} loaded successfully.")
@@ -57,7 +57,7 @@ async def load(ctx: lb.Context,extension: str) -> None:
 @lb.option(
     "extension", "The extension to unload")
 @lb.command("unload", "Unload an extension", pass_options=True, aliases=["ul"])
-@lb.implements(lb.PrefixCommand, lb.SlashCommand)
+@lb.implements(lb.PrefixCommand)
 async def unload(ctx: lb.Context,extension: str) -> None:
     ctx.bot.unload_extensions(f"extensions.{extension}")
     await ctx.respond(f"Extension unloaded successfully.")

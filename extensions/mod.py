@@ -115,7 +115,7 @@ async def kick_user(ctx: lb.Context, user: hk.guilds.Member, time: str, reason: 
     "user", "The user to mute", hk.guilds.Member
 )
 @lb.command("hardmute", "Hard mute a user", pass_options=True)
-@lb.implements(lb.PrefixCommand, lb.SlashCommand)
+@lb.implements(lb.PrefixCommand)
 async def hard_mute_user(ctx: lb.Context, user: hk.guilds.Member, time: str, reason: Optional[str]) -> None:
     await ctx.respond("Sorry, command in development 👨‍🔬")
 
