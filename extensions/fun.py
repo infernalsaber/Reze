@@ -7,6 +7,7 @@ from miru.ext import nav
 
 from datetime import datetime
 from typing import Union, Optional
+import os
 
 import asyncpraw
 import requests
@@ -15,6 +16,12 @@ import re
 
 from extPlugins.misc import requestsFailedError
 from extPlugins.misc import CustomPrevButton, CustomNextButton
+
+import dotenv
+dotenv.load_dotenv()
+
+DB_KEY = os.getenv("DANBOORU_KEY")
+DB_ID = os.getenv("DANBOORU_USER")
 
 fun_plugin = lb.Plugin("Fun", "Misc. commands serving no real purpose")
 
@@ -126,11 +133,7 @@ async def give_animal(ctx: lb.Context) -> None:
 @lb.command("joke", "Fetch some joks")
 @lb.implements(lb.PrefixSubCommand, lb.SlashSubCommand)
 async def joke_reddit(ctx: lb.Context) ->None:
-    reddit = asyncpraw.Reddit(
-        client_id="aex2BIP8LMgjH9QcbAcshQ",
-        client_secret="OstyvdzCGnvyRps_Oe0wUkWzDHJl4Q",
-        user_agent="reze",
-    )
+    reddit = ctx.bot.d.reddit
     print(reddit.read_only)
     subreddit = await reddit.subreddit("jokes+dadjokes")
     submissions = subreddit.hot(limit=50)
@@ -206,28 +209,41 @@ async def subreddit(ctx: lb.Context, subreddit: str) -> None:
 @lb.option("tags", "Tags of the posts to be fetched", str, required=False)
 @lb.command("danbooru", "Fetch some arts from danbooru", pass_options=True, aliases=["db"])
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
-async def danbooru(ctx: lb.Context, tags: str, number: int = 5) -> None:
-    url = "https://testbooru.donmai.us/"
+async def danbooru(ctx: lb.Context, tags: str, number: int = None) -> None:
+    url = "https://danbooru.donmai.us/"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
     }
-    if number and number > 10:
+    if number and number > 30:
         await ctx.respond("Too many requests")
         return
+    
+    if not number:
+        number = 10
+
+    page = random.randint(1, 5)
+
     if not tags:
-        response = requests.get(f"{url}/posts.json", params=dict(limit=number),headers=headers)
+        response = requests.get(f"{url}/posts.json", params=dict(limit=number+5, api_key=DB_KEY, login=DB_ID, page=page),headers=headers)
     else:
-        response = requests.get(f"{url}/posts.json", params=dict(limit=number, tags=tags), headers=headers)
+        # response = requests.get(f"{url}/posts.json", params=dict(limit=number+5, tags=f"{tags}", api_key=DB_KEY, login=DB_ID, page=page), headers=headers)
+        response = requests.get(f"{url}/posts.json?limit={number+5}&tags={tags}&api_key={DB_KEY}&login={DB_ID}&page={page} " ,headers=headers)
     if not response.ok:
         print(response.content)
         raise requestsFailedError
         return
     
+
+
     pages = []
 
     userName = re.compile(r"https?://twitter.com/(\w+)/status/\w+")
-
+    # from pprint import pprint
+    # pprint(response.json())
+    # print("\n\n", number, "\n\n")
+  
     for item in response.json():
+
         if item["pixiv_id"]:
             source = f"{item['pixiv_id']} on Pixiv"
             icon = "https://w7.pngwing.com/pngs/952/504/png-transparent-pixiv-graphic-designer-illustrator-design-blue-text-logo.png"
@@ -237,12 +253,18 @@ async def danbooru(ctx: lb.Context, tags: str, number: int = 5) -> None:
         else:
             source = "Unknown"
             icon = None
-        pages.append(
-            hk.Embed()
-            .set_image(item["file_url"])
-            .set_footer(f"Source: {source}", icon=icon)
-            # .set_footer(f"Source: {data['source']}")
-        )
+        print(item.keys())
+        if not 'file_url' in item.keys():
+            pass
+        else:
+            # if not item["large_file_url"]:
+            pages.append(
+                hk.Embed()
+                .set_image(item["file_url"])
+                .set_footer(f"Source: {source}", icon=icon)
+            )
+            if len(pages) == number:
+                break
 
     buttons = [
         CustomPrevButton(), 
@@ -253,37 +275,6 @@ async def danbooru(ctx: lb.Context, tags: str, number: int = 5) -> None:
     navigator = nav.NavigatorView(pages=pages, buttons=buttons)
     await navigator.send(ctx.channel_id)
 
-'''
-    async for submission in subreddit.hot(limit=5):
-        if (submission.selftext != "\[removed\]"):
-            
-            # print(submission.title)
-            # print(submission.score)
-            # print(submission.author)
-            # print(submission.url)
-            # print(submission.name)
-            # print(submission.permalink)
-            # print(submission.score)
-            # print("Timezone: ", submission.created_utc)
-            # print(submission.upvote_ratio)
-            # print(submission.is_original_content)
-            # print(submission.selftext)
-            # print("\n\n")
-            await ctx.respond(
-                embed=hk.Embed(
-                    description=submission.selftext,
-                    timestamp=datetime.fromtimestamp(int(submission.created_utc))
-                )
-                .set_author(name=submission.title, url=submission.url)
-                .set_footer(
-                    f"Posted by: {submission.author}", 
-                    icon="https://icons.iconarchive.com/icons/limav/flat-gradient-social/512/Reddit-icon.png",
-                )
-            )
-'''
-
-
-
 
 def load(bot: lb.BotApp) -> None:
     bot.add_plugin(fun_plugin)
@@ -291,51 +282,3 @@ def load(bot: lb.BotApp) -> None:
 def unload(bot: lb.BotApp) -> None:
     bot.remove_plugin(fun_plugin)
 
-
-
-
-# @fun_group.child
-
-# @lb.command("meme", "Fetch meme")
-
-# @lb.implements(lb.PrefixSubCommand, lb.SlashSubCommand)
-
-# async def meme_subcommand(ctx: lb.Context) -> None:
-
-#     async with ctx.bot.d.aio_session.get(
-
-#         ""
-
-#     ) as response:
-
-#         res = await response.json()
-
-#         if response.ok:
-
-#             embed = (
-
-#                 hk.Embed(
-
-#                     description="", title="Free Dictionary", 
-
-#                     url="https://github.com/meetDeveloper/freeDictionaryAPI",
-
-#                     timestamp=int(datetime.now().timestamp())
-
-#                 )
-
-#                 .add_field("Word", "value")
-
-#                  .set_footer(
-
-#                     text=f"Requested by: {ctx.author.username}",
-
-#                     icon=ctx.author.display_avatar_url,
-
-#                     )
-
-#             )
-
-#         else:
-
-#             await ctx.respond()

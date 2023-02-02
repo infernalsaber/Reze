@@ -26,7 +26,7 @@ extPlugins/test_plugins/apis.http
 extPlugins/compile_test.py
 extPlugins/plot_curves.py
 extPlugins/reddit_api_test.py
-# botdb.db
+botdb.db
 db.py
 archived_extensions/plotter.py
 
