@@ -20,7 +20,6 @@ extensions/__pycache__/*
 #misc
 archived_extensions/test.py
 
-extensions/utilities.py
 extPlugins/__pycache__/*
 extPlugins/test_plugins/apis.http
 extPlugins/compile_test.py
@@ -31,3 +30,4 @@ db.py
 archived_extensions/plotter.py
 
 test.txt
+botdb.db

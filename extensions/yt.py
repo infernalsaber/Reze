@@ -22,7 +22,7 @@ from extensions.dir import KillButton, GenericButton
 
 dotenv.load_dotenv()
 
-yt_key = os.environ["yt_key"]
+YT_KEY = os.environ["yt_key"]
 
 """
 #TODO
@@ -46,7 +46,7 @@ class YTVideo:
             return f"https://www.youtube.com/watch?v={self.vId}"
 
         def set_duration(self, req) -> str:
-                ytapi2 = req.get(f"https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id={self.vId}&regionCode=US&key={yt_key}")
+                ytapi2 = req.get(f"https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id={self.vId}&regionCode=US&key={YT_KEY}")
                 ytapi2 = ytapi2.json()
                 self.vDuration = str(isodate.parse_duration(ytapi2["items"][0]["contentDetails"]["duration"]))
                 if self.vDuration.startswith("0:"):
@@ -55,7 +55,7 @@ class YTVideo:
                 return self.vDuration
 
         def get_duration_secs(self) -> int:
-                ytapi2 = requests.get(f"https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id={self.vId}&regionCode=US&key={yt_key}")
+                ytapi2 = requests.get(f"https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id={self.vId}&regionCode=US&key={YT_KEY}")
                 ytapi2 = ytapi2.json()
                 return int(isodate.parse_duration((ytapi2["items"][0]["contentDetails"]["duration"])).total_seconds())
 # class boolButton(miru.View):
@@ -127,7 +127,7 @@ async def userinfo(ctx: lb.Context, query: str) -> None:
         "maxResults": "6",
         "q": query,
         "regionCode": "US",
-        "key": yt_key,
+        "key": YT_KEY,
     }
 
     response = req.get(" https://youtube.googleapis.com/youtube/v3/search", params=response_params)   
@@ -208,7 +208,7 @@ async def userinfo(ctx: lb.Context, query: str) -> None:
         probable_name = lstVids[vidIndex].vName.replace("/", "⧸").replace("?","？").replace(":", "：").replace("|", "｜").replace("\\", "⧹")
         await ctx.respond(
             content=f"{ctx.author.mention}, here's your MV",
-            attachment=f"videos/{lstVids[vidIndex].vName}.m4a", 
+            attachment=f"videos/{probable_name}.m4a", 
             user_mentions = True)
 
 
@@ -219,10 +219,10 @@ async def userinfo(ctx: lb.Context, query: str) -> None:
 @lb.command("youtubedownload", "Download a yt video",aliases=["ytdl"] ,pass_options=True)
 @lb.implements(lb.PrefixCommand)
 async def userinfo(ctx: lb.Context, video: str) -> None:
-    pattern = re.search(r"\b(https?://)?(www\.)?youtube\.com/watch\?v=(\w+)", video)
+    pattern = re.search(r"\b(https?://)?(www\.)?(m.)?(youtube\.com|/watch\?v=|youtu\.be/)(\w+)", video)
     if pattern:
         # print(pattern[0], pattern[1], pattern[2])
-        resp = requests.get(f"https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id={pattern[3]}&regionCode=US&key={yt_key}")
+        resp = requests.get(f"https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id={pattern[5]}&regionCode=US&key={YT_KEY}")
         
         if not resp.ok:
             await ctx.respond(f"Can't fetch video details. YT error: `{resp.status_code}`")
@@ -234,19 +234,21 @@ async def userinfo(ctx: lb.Context, video: str) -> None:
         if duration < 60 or duration > 601:
             await ctx.respond("Video too long")
             return
+
+        await yt_plugin.bot.rest.edit_message(ctx.channel_id, ctx.event.message , flags=hk.MessageFlag.SUPPRESS_EMBEDS)
+        await downloadVideo(video)
+        
+        probable_name = resp["items"][0]["snippet"]["title"].replace("/", "⧸").replace("?","？").replace(":", "：").replace("|", "｜").replace("\\", "⧹")
+        await ctx.respond(
+                content=f"{ctx.author.mention}, here's your MV",
+                attachment=f"videos/{probable_name}.m4a", 
+                user_mentions = True)
     else:
         if not (lb.checks._has_guild_permissions(ctx, perms=hk.Permissions.ADMINISTRATOR)):
             await ctx.respond(f"That's not a YouTube video {hk.Emoji.parse('<:worry:1061307106399113216>')}")
             return
 
-    await yt_plugin.bot.rest.edit_message(ctx.channel_id, ctx.event.message , flags=hk.MessageFlag.SUPPRESS_EMBEDS)
-    await downloadVideo(video)
-    # ytapi2["items"][0]
-    probable_name = resp["items"][0]["snippet"]["title"].replace("/", "⧸").replace("?","？").replace(":", "：").replace("|", "｜").replace("\\", "⧹")
-    await ctx.respond(
-            content=f"{ctx.author.mention}, here's your MV",
-            attachment=f"videos/{resp['items'][0]['snippet']['title']}.m4a", 
-            user_mentions = True)
+
 
 def load(bot: lb.BotApp) -> None:
     bot.add_plugin(yt_plugin)

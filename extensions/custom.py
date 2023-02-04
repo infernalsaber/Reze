@@ -107,10 +107,10 @@ async def add_subcommand(ctx: lb.Context, name: str, string: str, file: Optional
         return
 
 
-    query = "INSERT INTO commands VALUES (?,?,?)"
+    query = "INSERT INTO commands VALUES (?,?,?, ?)"
 
     
-    args = (name, string, ctx.author.mention)
+    args = (name, string, ctx.author.mention, None)
     c.execute(query, args)
     botdb.commit()
     await ctx.respond(f"Added successfully ✅")
@@ -143,9 +143,7 @@ async def custom_commands(event: hk.GuildMessageCreateEvent)-> None:
         c = botdb.cursor()
 
         query = "SELECT name,output FROM commands"
-        # args = (link, ctx.author.id)
         c.execute(query)
-
         commands = c.fetchall()
         
         for item in commands:
@@ -153,7 +151,7 @@ async def custom_commands(event: hk.GuildMessageCreateEvent)-> None:
                 if type_of_response(item[1]) == 'image':
                     await event.message.respond(hk.Embed().set_image(item[1]))
                 else:
-                    await event.message.respond(item[1], attachment=item[3] or None)
+                    await event.message.respond(item[1])
 
 def load(bot: lb.BotApp) -> None:
     bot.add_plugin(customcmd_plugin)
