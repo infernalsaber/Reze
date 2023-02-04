@@ -44,6 +44,10 @@ async def on_starting(event: hk.StartingEvent) -> None:
         user_agent="reze",
     )
     bot.d.dbcon = sqlite3.connect("botdb.db")
+    os.mkdir("pictures")
+    os.mkdir("pictures/visual")
+    os.mkdir("videos")
+    
 
 
 @bot.listen()
