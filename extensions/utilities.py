@@ -140,6 +140,15 @@ async def make_embed(ctx: lb.Context, code: str) -> None:
     ctx.bot.load_extensions("extensions.new")
     await ctx.respond("Done👍", delete_after=5)
 
+@util_plugin.command
+@lb.add_checks(
+    lb.owner_only
+)
+@lb.command("backup", "Take a backup of the db")
+@lb.implements(lb.PrefixCommand)
+async def make_embed(ctx: lb.Context) -> None:
+    await ctx.respond(attachment="botdb.db")
+
 
 def load(bot: lb.BotApp) -> None:
     bot.add_plugin(util_plugin)

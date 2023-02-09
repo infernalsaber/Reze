@@ -91,11 +91,9 @@ async def add_subcommand(ctx: lb.Context, name: str, string: str, file: Optional
 
     if not string and not file:
         raise lb.NotEnoughArguments
-        return
 
     if ";" in string:
         raise injectionRiskError
-        return
 
     botdb = ctx.bot.d.dbcon
     c = botdb.cursor()
@@ -128,7 +126,15 @@ async def edit_subcommand(ctx: lb.Context, link: str) -> None:
 @lb.command("delete", "Delete a custom command", aliases=["d"], pass_options=True)
 @lb.implements(lb.PrefixSubCommand)
 async def delete_subcommand(ctx: lb.Context, link: str) -> None:
-    ...
+    if ";" in string:
+        raise injectionRiskError   
+
+    botdb = ctx.bot.d.dbcon
+    c = botdb.cursor()
+    query = "DELETE FROM commands WHERE name=?"
+    args = (name,)
+    c.execute(query, args)
+    await ctx.respond(f"Deleted command: `{command}`")
 
 @customcmd_plugin.listener(hk.GuildMessageCreateEvent)
 async def custom_commands(event: hk.GuildMessageCreateEvent)-> None:

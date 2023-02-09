@@ -9,4 +9,4 @@ COPY . .
 RUN mkdir downloads
 RUN apt-get update && apt-get install -y ffmpeg
 
-CMD ["python3","-OO", "bot.py"]
+CMD ["python3", "-OO", "bot.py"]
