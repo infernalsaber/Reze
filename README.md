@@ -4,7 +4,7 @@
 
 <div align="center"> 
 
-![img](https://cdn.discordapp.com/attachments/1005948828484108340/1073873302684180510/reze_round.png)
+![bot_pfp](https://cdn.discordapp.com/attachments/1005948828484108340/1073873302684180510/reze_round.png =250x250)
 
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
