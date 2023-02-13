@@ -4,7 +4,7 @@
 
 <div align="center"> 
 
-![img](https://cdn.discordapp.com/attachments/1005948828484108340/1069946075865165874/reze_round.png)
+<img src="https://cdn.discordapp.com/attachments/1005948828484108340/1073873302684180510/reze_round.png" width="250" />
 
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -80,7 +80,7 @@ Execute python code within the bot and get the output (currently locked)
 
 ## Credits
 
-[@athenawyrm](https://twitter.com/athenawyrm/): Bot Profile Picture
+[@kozzz_y](https://twitter.com/kozzz_y/status/1617119473655517185): Bot Profile Picture
 
 [VOFAN](https://twitter.com/vofan_tw): Monogatari  Illustrations used in Designs
 
