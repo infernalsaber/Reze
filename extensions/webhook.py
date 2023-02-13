@@ -1,40 +1,17 @@
-# import os, lxml, re, json, urllib.request, requests
-# from bs4 import BeautifulSoup
-# from PIL import Image
 from datetime import datetime
-# from typing import Optional
 
 import hikari as hk
 import lightbulb as lb
-# import miru
-# from miru.ext import nav
-
-# import subprocess
 
 
 webhook_plugin = lb.Plugin("Webhook", "Utilize webhooks")
 
-
-  
-# import time
 
 '''
 #TODO
 Set the webhook to respond only at certain times, guild message listener
 '''
 
-@webhook_plugin.command
-@lb.option(
-    "message", "Message to say", str, modifier=lb.commands.OptionModifier.CONSUME_REST
-)
-@lb.command("webhook", "Make a webhook", pass_options=True, aliases=["wh"])
-@lb.implements(lb.PrefixCommand, lb.SlashCommand)
-async def webhooks(ctx: lb.Context, message: str) -> None:
-    webhook = await webhook_plugin.bot.rest.create_webhook(channel=ctx.channel_id, name=ctx.author.username)
-    await webhook.execute(content=message, avatar_url=ctx.author.avatar_url, user_mentions=True)
-    if isinstance(ctx, lb.PrefixContext):
-        await ctx.event.message.delete()
-    await webhook_plugin.bot.rest.delete_webhook(webhook)
 
 @webhook_plugin.command
 @lb.option(

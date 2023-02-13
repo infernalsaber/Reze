@@ -233,17 +233,16 @@ async def color_visualize(hexCode: str, infoText: str=None, htmlColor:str=None) 
     "color", "The color to visualize", hk.Color, 
 )
 @lb.command(
-    "visualize", "Show the visualization of a colour and its details", aliases=["cv", "showcolor"], pass_options=True
+    "visualize", "Show the visualization of a colour and its details", aliases=["cv", "colorinfo"], pass_options=True
 )
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def visualize(ctx: lb.Context, color: hk.Color) -> None:    
-    # print(os.listdir("pictures/visual/"))
     if isinstance(ctx, lb.SlashContext):
         await ctx.respond(hk.ResponseType.DEFERRED_MESSAGE_CREATE)
     if f"{color.hex_code}.png" in os.listdir("pictures/visual/"):
         await ctx.respond(attachment=f"pictures/visual/{color.hex_code}.png")
         return
-    # color.
+
     async with ctx.bot.rest.trigger_typing(ctx.event.channel_id):
         async with ctx.bot.d.aio_session.get(
             "https://www.thecolorapi.com/id", params=dict(hex=color.raw_hex_code)
@@ -262,7 +261,7 @@ async def visualize(ctx: lb.Context, color: hk.Color) -> None:
 
 @image_plugin.command
 @lb.option(
-    "num", "The image whose palette is to be generated", int, required=False
+    "num", "The number of colors", int, required=False
 )
 @lb.option(
     "image", "The image whose palette is to be generated", hk.Attachment, required=False
@@ -291,46 +290,9 @@ async def palette(ctx: lb.Context, image: hk.Attachment = None, num: int = None)
         image = ImageOps.expand(image, border=5, fill=(0,255,255))
         x,y = image.size
         img.paste(image, (82, 183, 82+x, 183+y))
-        num = random.randint(1, 400)
+        num = random.randint(1, 999)
         img.save(f"pictures/visual/{num}.png")
         await ctx.respond(attachment=f"pictures/visual/{num}.png")
-# @foo.autocomplete("foo")
-
-# async def effect_autocomplete(
-
-#     opt: hk.AutocompleteInteractionOption, inter: hk.AutocompleteInteraction
-
-# ) -> Union[str, Sequence[str], hk.CommandChoice, Sequence[hk.CommandChoice]]:
-
-#     ...
-
-
-
-# @imaging.child
-
-# @lb.option("bool", "effect to apply", bool)
-
-# @lb.command("boolu", "Fetch meme")
-
-
-# @lb.implements(lb.PrefixSubCommand, lb.SlashSubCommand)
-
-# async def meme_subcommand(ctx: lb.Context, bool: bool) -> None:
-
-#     ...
-
-
-# @imaging.child
-
-# @lb.option("clr", "effect to apply", hk.Color)
-
-# @lb.command("color", "Fetch meme")
-
-# @lb.implements(lb.PrefixSubCommand, lb.SlashSubCommand)
-
-# async def lolol(ctx: lb.Context, clr: hk.Color) -> None:
-
-#     ...    
 
 
 def load(bot: lb.BotApp) -> None:
