@@ -6,7 +6,6 @@ from bs4 import BeautifulSoup
 from typing import Literal, Union, Optional
 
 import hikari as hk
-# from hikari import Color
 from miru.ext import nav
 import miru
 
@@ -27,11 +26,9 @@ def get_dominant_colour(PIL_img: Image.Image, show: Optional[bool] = 0) -> hk.Co
     
     PIL_img = PIL_img.resize((1, 1), resample=0)
     dominant_color: tuple = PIL_img.getpixel((0, 0))
-    # print(type(dominant_color))
     if(show):
         PIL_img.resize((75, 75)).show() #show the image if desired
     
-    # print("Colour:", dominant_color)
     return dominant_color
 
 def get_image_dominant_colour(link: str) -> hk.Color:

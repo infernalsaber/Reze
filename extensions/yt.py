@@ -221,7 +221,6 @@ async def userinfo(ctx: lb.Context, query: str) -> None:
 async def userinfo(ctx: lb.Context, video: str) -> None:
     pattern = re.search(r"\b(https?://)?(www\.)?(m.)?(youtube\.com|/watch\?v=|youtu\.be/)(\w+)", video)
     if pattern:
-        # print(pattern[0], pattern[1], pattern[2])
         resp = requests.get(f"https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id={pattern[5]}&regionCode=US&key={YT_KEY}")
         
         if not resp.ok:
@@ -229,9 +228,9 @@ async def userinfo(ctx: lb.Context, video: str) -> None:
             return
             
         resp = resp.json()
-        # pprint(resp)
+
         duration = int(isodate.parse_duration((resp["items"][0]["contentDetails"]["duration"])).total_seconds())
-        if duration < 60 or duration > 601:
+        if duration < 60 or duration > 501:
             await ctx.respond("Video too long")
             return
 

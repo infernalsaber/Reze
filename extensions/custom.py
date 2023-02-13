@@ -14,7 +14,7 @@ customcmd_plugin = lb.Plugin("Custom Commands")
 
 
 @customcmd_plugin.command
-@lb.command("peakfiction", "Your peak fiction, your goat", aliases=["pf"])
+@lb.command("peakfiction", "Your peak fiction, your goat", aliases=["pf", "goat"])
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def peak_fiction(ctx: lb.Context) -> None:
     c = ctx.bot.d.dbcon.cursor()
@@ -83,7 +83,7 @@ async def cmd_group(ctx: lb.Context) -> None:
 
 @cmd_group.child
 @lb.option("file", "The attachment (if any)", hk.Attachment, required=False)
-@lb.option("string", "The string to repeat", str ,required=False)
+@lb.option("string", "The string to repeat", str ,modifier=lb.OptionModifier.CONSUME_REST, required=False)
 @lb.option("name", "The name of the command")
 @lb.command("add", "Add your favourite if it doesn't exist already", aliases=["a"], pass_options=True)
 @lb.implements(lb.PrefixSubCommand)
@@ -111,7 +111,8 @@ async def add_subcommand(ctx: lb.Context, name: str, string: str, file: Optional
     args = (name, string, ctx.author.mention, None)
     c.execute(query, args)
     botdb.commit()
-    await ctx.respond(f"Added successfully ✅")
+    await ctx.event.message.add_reaction("✅")
+    # await ctx.respond(f"Added successfully ✅")
     await ctx.bot.rest.edit_message(ctx.channel_id, ctx.event.message, flags=hk.MessageFlag.SUPPRESS_EMBEDS)
 
 @cmd_group.child
