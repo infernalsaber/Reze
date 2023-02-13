@@ -188,7 +188,7 @@ async def userinfo(ctx: lb.Context, query: str) -> None:
     
     if len(lstVids[vidIndex].vDuration.split(":")) == 2:
         netDuration = int(lstVids[vidIndex].vDuration[0])*60 + int(lstVids[vidIndex].vDuration[1])
-        if not netDuration < 60 or netDuration > 601:
+        if not netDuration < 60 or netDuration > 501:
             print(netDuration)
             await ctx.respond("Invalid time duration.")
             return
