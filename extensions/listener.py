@@ -143,7 +143,7 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
 @al_listener.command
 @lb.option("media", "The name of the media to search", modifier=lb.commands.OptionModifier.CONSUME_REST)
 @lb.option("type", "The type of media to search for", choices=["anime", "manga", "character"])
-@lb.command("lookup", "Look up anime/manga on anilist", pass_options=True, aliases=["lu"])
+@lb.command("lookup", "Look up anime/manga on anilist", pass_options=True, aliases=["lu"], auto_defer=True)
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def al_search(ctx: lb.Context, type: str, media: str) -> None:
     query = '''
@@ -181,8 +181,10 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
             type = "MANGA"
         else:
             type = "ANIME"
-    elif type=="character":
-        pass
+    elif type in ["character", "c"]:
+        # pass
+        await search_character(ctx, media)
+        return
     else:
         await ctx.respond("Invalid media type. Please use anime(a) or manga(m)")
         return
