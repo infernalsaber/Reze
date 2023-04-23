@@ -27,7 +27,7 @@ async def impostor(ctx: lb.Context, user: hk.Member, message: str) -> None:
     await webhook.execute(content=message, avatar_url=user.avatar_url, user_mentions=True)
     await webhook_plugin.bot.rest.delete_webhook(webhook)
 
-@webhooks.set_error_handler
+@webhook_plugin.set_error_handler
 async def compile_error(event: lb.CommandErrorEvent) -> bool:
     exception = event.exception.__cause__ or event.exception
 

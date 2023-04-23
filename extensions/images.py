@@ -233,16 +233,17 @@ async def color_visualize(hexCode: str, infoText: str=None, htmlColor:str=None) 
     "color", "The color to visualize", hk.Color, 
 )
 @lb.command(
-    "visualize", "Show the visualization of a colour and its details", aliases=["cv", "colorinfo"], pass_options=True
+    "visualize", "Show the visualization of a colour and its details", aliases=["cv", "colorinfo"], pass_options=True,  auto_defer=True
 )
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def visualize(ctx: lb.Context, color: hk.Color) -> None:    
     if isinstance(ctx, lb.SlashContext):
-        await ctx.respond(hk.ResponseType.DEFERRED_MESSAGE_CREATE)
+        color = hk.Color.of(color)
     if f"{color.hex_code}.png" in os.listdir("pictures/visual/"):
         await ctx.respond(attachment=f"pictures/visual/{color.hex_code}.png")
         return
 
+    #TODO remove the typing for slash command
     async with ctx.bot.rest.trigger_typing(ctx.event.channel_id):
         async with ctx.bot.d.aio_session.get(
             "https://www.thecolorapi.com/id", params=dict(hex=color.raw_hex_code)

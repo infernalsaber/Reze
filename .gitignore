@@ -31,3 +31,4 @@ archived_extensions/plotter.py
 
 test.txt
 botdb.db
+botdb.db:Zone.Identifier
