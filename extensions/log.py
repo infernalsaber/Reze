@@ -7,12 +7,16 @@ import isodate
 import datetime
 import asyncio
 
+import os
+
 logger = lb.Plugin("Log Commands", "Keeping a log of data, more to be added later")
 
 
 @logger.listener(hk.GuildMessageDeleteEvent)
-async def preban(event: hk.GuildMessageDeleteEvent):
+async def log(event: hk.GuildMessageDeleteEvent):
+    print(dir(event))
     old_message = event.old_message
+    print(dir(old_message))
     author = old_message.author
     # old_message.author.is_bot
     if old_message.author.id != '204992650305077248':
@@ -38,7 +42,25 @@ async def preban(event: hk.GuildMessageDeleteEvent):
         # content=    
     )
 
+@logger.command
+@lb.add_checks(
+    lb.owner_only
+)
+@lb.command("logs", "Output the logs as a rar file", pass_options=True, aliases=["log"])
+@lb.implements(lb.PrefixCommand)
+async def logs(ctx: lb.Context) -> None:
+    os.system('rar a logs.rar ./logs')
+    await ctx.respond(attachment="logs.rar")
+    os.remove("logs.rar")
 
+@logger.command
+@lb.add_checks(
+    lb.owner_only
+)
+@lb.command("loglast", "Output the latest log file", pass_options=True, aliases=["ll"])
+@lb.implements(lb.PrefixCommand)
+async def logs(ctx: lb.Context) -> None:
+    await ctx.respond(attachment="./logs/log.txt")
 
 def load(bot: lb.BotApp) -> None:
     bot.add_plugin(logger)

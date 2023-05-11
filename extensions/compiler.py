@@ -19,9 +19,6 @@ dscSyntaxGist = "https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7
 # import time
 
 @compiler_plugin.command
-@lb.add_checks(
-    lb.owner_only
-)
 @lb.option(
     "code", "The code to test", str, modifier=lb.commands.OptionModifier.CONSUME_REST
 )
@@ -39,8 +36,8 @@ async def compiler(ctx: lb.Context,code: str) -> None:
     with open("ntfc.py", "w") as f:
         f.write(code[5:-3])
 
-    result = subprocess.Popen(["python", "ntfc.py"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output, error = result.communicate()
+    result = subprocess.Popen(["python3", "ntfc.py"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output, error = result.communicate(timeout=12)
     print(output , error)
     if error:
         await ctx.respond(f"Process returned with error: ```{(str(error, 'UTF-8')).split('ntfc.py')[1][3:]}```")

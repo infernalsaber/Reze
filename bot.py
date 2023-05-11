@@ -10,8 +10,11 @@ from miru.ext import nav
 from lightbulb.ext import tasks
 
 import asyncpraw
+import sys
 
 import sqlite3
+
+import logging
 
 dotenv.load_dotenv()
 
@@ -21,13 +24,36 @@ dotenv.load_dotenv()
 1. Create a global error handler (shorturl.at/dowBG)✔
 """
 
+#The following snippet is borrowed from:https://github.com/Nereg/ARKMonitorBot/blob/1a6cedf34d531bddf0f5b11b3238344192998997/src/main.py#L14
+
+def setupLogging() -> None:
+    # get root logger
+    rootLogger = logging.getLogger("")
+    # create a rotating file handler with 1 backup file and 1 megabyte size
+    fileHandler = logging.handlers.RotatingFileHandler("./logs/log.txt", "w+", 1_000_000, 1, "UTF-8")
+    # create a default console handler
+    consoleHandler = logging.StreamHandler()
+    # create a formatting style (modified from hikari)
+    formatter = logging.Formatter(
+        fmt="%(levelname)-1.1s %(asctime)23.23s %(name)s @ %(lineno)d: %(message)s"
+    )
+    # add the formatter to both handlers
+    consoleHandler.setFormatter(formatter)
+    fileHandler.setFormatter(formatter)
+    # add both handlers to the root logger
+    rootLogger.addHandler(fileHandler)
+    rootLogger.addHandler(consoleHandler)
+    # set logging level to info
+    rootLogger.setLevel(logging.INFO)
+
 
 bot = lb.BotApp(
     token=os.getenv("BOT_TOKEN"),
     intents=hk.Intents.ALL,
     prefix=["-", "gae", ",,"],
     help_slash_command=True,
-    logs="DEBUG"
+    logs="DEBUG",
+    owner_ids=[1002964172360929343]
 )
 
 miru.install(bot)
@@ -47,6 +73,11 @@ async def on_starting(event: hk.StartingEvent) -> None:
     os.mkdir("pictures")
     os.mkdir("pictures/visual")
     os.mkdir("videos")
+    os.mkdir("logs")
+    with open("./logs/log.txt", "w+") as f:
+        pass
+    setupLogging()
+
     
 
 
