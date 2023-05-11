@@ -23,7 +23,7 @@ task_plugin = lb.Plugin("Tasks", "Background processes")
 )
 @lb.command("remindme", "Set a reminder", pass_options=True, aliases=["remind", "rm"])
 @lb.implements(lb.PrefixCommand)
-async def reminder(ctx: lb.Context, task: str) -> None:
+async def remind(ctx: lb.Context, task: str) -> None:
     """Use this command to set a timer after which you would be reminded to do X in your DMs
 
     Args:
@@ -53,6 +53,17 @@ async def clear_media_files():
     for f in files:
         os.remove(f)
     print("Cleared")
+
+@tasks.task(d=30)
+async def update_yt_dlp():
+    os.system("yt-dlp -U")
+    #Done to prevent the -ytdl and -yts commands from breaking
+    print("Updated the package yt-dlp")
+
+@tasks.task(d=30)
+async def logs_date():
+    os.rename("./logs/log.txt", f"./logs/{datetime.date.today()}.txt")
+
 
 def load(bot: lb.BotApp) -> None:
     bot.add_plugin(task_plugin)

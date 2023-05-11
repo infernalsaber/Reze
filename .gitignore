@@ -12,6 +12,7 @@ richpresence.py
 arts/
 
 .ipynb_checkpoints/
+__pycache__/
 extensions/__pycache__/*
 .venv/
 .env
@@ -31,4 +32,4 @@ archived_extensions/plotter.py
 
 test.txt
 botdb.db
-botdb.db:Zone.Identifier
+logs/
