@@ -71,7 +71,7 @@ class AnimalView(miru.View):
         super().__init__(timeout=60)
 
 
-    @miru.select(
+    @miru.text_select(
         custom_id = "animal_select",
         placeholder = "Pick an animal",
         options = [
@@ -85,7 +85,7 @@ class AnimalView(miru.View):
         ],
     )
 
-    async def select_menu(self, select: miru.Select, ctx: miru.Context) -> None:
+    async def select_menu(self, select: miru.TextSelect, ctx: miru.Context) -> None:
         print(select)
         animal = select.values[0]
         async with ctx.bot.d.aio_session.get(
