@@ -1,6 +1,7 @@
 #Media files downloaded by the user
 videos/
 pictures/
+logs/
 
 #File managed by the program
 ntfc.py 
@@ -12,12 +13,14 @@ richpresence.py
 arts/
 
 .ipynb_checkpoints/
+__pycache__/*
 extensions/__pycache__/*
 .venv/
 
 
+
 #misc
-archived_extensions/test.py
+archived_extensions/
 
 extPlugins/__pycache__/*
 extPlugins/test_plugins/apis.http
@@ -26,5 +29,4 @@ extPlugins/plot_curves.py
 extPlugins/reddit_api_test.py
 
 db.py
-archived_extensions/plotter.py
 
