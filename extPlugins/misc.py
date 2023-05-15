@@ -84,7 +84,7 @@ class injectionRiskError(CustomError):
 class fileSizeError(CustomError):
     """
     Exception raised when trying to handle a file over the Discord upload 
-    size limit (8MB as of Feb 2023)
+    size limit (25MB as of May 2023)
     """
     pass
 
