@@ -299,7 +299,7 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
     if hasattr(view, "answer"):
         await ctx.respond(
             f"Loading chapter {hk.Emoji.parse('<a:loading_:1061933696648740945>')}",
-            reply=True, mentions_everyone=True
+            reply=True
         )
         print(f"\n\n{view.answer}\n\n")
     else:
