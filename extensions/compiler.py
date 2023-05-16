@@ -22,6 +22,9 @@ dscSyntaxGist = "https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7
 @lb.option(
     "code", "The code to test", str, modifier=lb.commands.OptionModifier.CONSUME_REST
 )
+@lb.add_checks(
+    lb.owner_only
+)
 @lb.command("e", "Test some code and see output/errors (python)", pass_options=True, aliases=["py", "exec"])
 @lb.implements(lb.PrefixCommand)
 async def compiler(ctx: lb.Context,code: str) -> None:

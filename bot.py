@@ -9,6 +9,7 @@ import miru
 from miru.ext import nav
 from lightbulb.ext import tasks
 
+import datetime
 import asyncpraw
 import sys
 
@@ -70,6 +71,7 @@ async def on_starting(event: hk.StartingEvent) -> None:
         user_agent="reze",
     )
     bot.d.dbcon = sqlite3.connect("botdb.db")
+    bot.d.timeup = datetime.datetime.now().astimezone()
     os.mkdir("pictures")
     os.mkdir("pictures/visual")
     os.mkdir("videos")
