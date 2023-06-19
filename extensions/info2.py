@@ -23,7 +23,7 @@ info_plugin = lb.Plugin("Info", "Get information about an entity")
 @lb.option(
     "user", "The user to get information about.", hk.User, required=False
 )
-@lb.command("userinfo", "Get info on a server member.", pass_options=True)
+@lb.command("userinfo", "Get info on a server member.", pass_options=True, aliases=["user"])
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def userinfo(ctx: lb.Context, user: Optional[hk.User] = None) -> None:
     if not (guild := ctx.get_guild()):
@@ -82,7 +82,7 @@ async def userinfo(ctx: lb.Context, user: Optional[hk.User] = None) -> None:
     # await ctx.respond(user.make_avatar_url())
 
 @info_plugin.command
-@lb.command("serverinfo", "Get general info about the server")
+@lb.command("serverinfo", "Get general info about the server", aliases=["server"])
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def userinfo(ctx: lb.Context) -> None:
     if not (guild := ctx.get_guild()):
@@ -202,6 +202,77 @@ async def userinfo(ctx: lb.Context) -> None:
     # member = 0
 
     # print(member)
+
+@info_plugin.command
+@lb.option(
+    "role", "The role to get information about.", hk.Role
+)
+@lb.command("roleinfo", "Get info on a role", pass_options=True, aliases=["role"])
+@lb.implements(lb.PrefixCommand, lb.SlashCommand)
+async def role_info(ctx: lb.Context, role: hk.Role) -> None:
+    if not (guild := ctx.get_guild()):
+        await ctx.respond("This command may only be used in servers.")
+        return
+        
+    await ctx.respond(
+        hk.Embed(
+            title=f"Role: {role.name}",
+            description=f"Role ID: `{role.id}`",
+            colour=role.color,
+            timestamp=datetime.now().astimezone(),
+        )
+        .set_footer(
+            text=f"Requested by {ctx.author.username}",
+            icon=ctx.author.display_avatar_url,
+        )
+        .add_field(
+            "Color",
+            role.color.hex_code,
+            inline=True,
+        )
+        .add_field(
+            "Icon",
+            f"(Link)[{role.icon_url}]",
+            inline=True,
+        )
+        .add_field(
+            "Created At",
+            f"<t:{int(role.created_at.timestamp())}:R>",
+            # inline=True,
+        )
+        .set_thumbnail(role.icon_url)
+    )
+
+@info_plugin.command
+@lb.option(
+    "emote", "The emote to get information about.", hk.Emoji
+)
+@lb.command("emoteinfo", "Get info on a role", pass_options=True, aliases=["emote, emoji"])
+@lb.implements(lb.PrefixCommand, lb.SlashCommand)
+async def emoji_info(ctx: lb.Context, emoji: hk.Emoji) -> None:
+    if not (guild := ctx.get_guild()):
+        await ctx.respond("This command may only be used in servers.")
+        return
+
+    await ctx.respond(
+        hk.Embed(
+            title=f"Emoji: {emoji.name}",
+            description=f"Idk wtf this is: `{emoji.mention}`",
+            colour=get_image_dominant_colour(emoji.url) or 0xf4eae9,
+            timestamp=datetime.now().astimezone(),
+        )
+        .set_footer(
+            text=f"Requested by {ctx.author.username}",
+            icon=ctx.author.display_avatar_url,
+        )
+        .add_field(
+            "Image",
+            f"Link[{emoji.url}]",
+            # inline=True,
+        )
+        .set_thumbnail(emoji.url)
+    )
+
 
 def load(bot: lb.BotApp) -> None:
     bot.add_plugin(info_plugin)

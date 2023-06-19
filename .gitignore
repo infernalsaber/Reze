@@ -33,3 +33,6 @@ archived_extensions/plotter.py
 test.txt
 botdb.db
 logs/
+extensions/smart.py
+extensions/wordcloud.py
+bebe.csv

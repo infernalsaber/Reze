@@ -25,6 +25,8 @@ DB_ID = os.getenv("DANBOORU_USER")
 
 fun_plugin = lb.Plugin("Fun", "Misc. commands serving no real purpose")
 
+import user_agent
+
 
 @fun_plugin.command
 @lb.command("fun", "entertainment", aliases=["f"])
@@ -212,7 +214,7 @@ async def subreddit(ctx: lb.Context, subreddit: str) -> None:
 async def danbooru(ctx: lb.Context, tags: str, number: int = None) -> None:
     url = "https://danbooru.donmai.us/"
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
+        "User-Agent": user_agent.generate_user_agent()
     }
     if number and number > 30:
         await ctx.respond("Too many requests")

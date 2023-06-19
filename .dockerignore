@@ -30,3 +30,7 @@ extPlugins/reddit_api_test.py
 
 db.py
 
+extensions/smart.py
+extensions/wordcloud.py
+bebe.csv
+
