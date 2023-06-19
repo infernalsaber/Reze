@@ -18,9 +18,10 @@ async def log(event: hk.GuildMessageDeleteEvent):
     old_message = event.old_message
     print(dir(old_message))
     author = old_message.author
-    # old_message.author.is_bot
-    if old_message.author.id != '204992650305077248':
-        return
+    #TODO: Fix this shit
+    print(old_message.author)
+    # if old_message.author.id != '204992650305077248':
+    #     return
     # print(author)
     content = old_message.content
     ava = old_message.author.avatar_url
