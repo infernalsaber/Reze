@@ -14,6 +14,7 @@ logger = lb.Plugin("Log Commands", "Keeping a log of data, more to be added late
 
 @logger.listener(hk.GuildMessageDeleteEvent)
 async def log(event: hk.GuildMessageDeleteEvent):
+    
     print(dir(event))
     old_message = event.old_message
     print(dir(old_message))
@@ -25,11 +26,16 @@ async def log(event: hk.GuildMessageDeleteEvent):
     # print(author)
     content = old_message.content
     ava = old_message.author.avatar_url
-    channel = event.get_channel()
+    # channel = event.get_channel()
     # await logger.bot.rest.fetch_member(event.guild_id, event.old_message)
+    try:
+        if author.is_bot:
+            return
+    except:
+        ...
 
     await logger.bot.rest.create_message(
-        channel,
+        998326870556807230,
         f"Message deleted by {author.mention} in {channel.mention}",
         embed=hk.Embed(
             description=content,
