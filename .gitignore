@@ -36,3 +36,4 @@ logs/
 extensions/smart.py
 extensions/wordcloud.py
 bebe.csv
+nohup.out

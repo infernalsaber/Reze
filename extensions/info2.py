@@ -142,7 +142,7 @@ async def userinfo(ctx: lb.Context) -> None:
         .add_field("Name", user)
         .add_field("No of Servers", len(guilds), inline=True)
         .add_field("No of Members", member, inline=True)
-        .add_field("Version", "v0.0.1")
+        .add_field("Version", "v0.2.0")
         .add_field("Alive since", f"<t:{int(user.created_at.timestamp())}:R>", inline=True)
         .add_field("Up since", f"<t:{int(info_plugin.bot.d.timeup.timestamp())}:R>", inline=True)
         .add_field(

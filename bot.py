@@ -54,7 +54,7 @@ bot = lb.BotApp(
     prefix=["-", "gae", ",,"],
     help_slash_command=True,
     logs="DEBUG",
-    owner_ids=[1002964172360929343]
+    owner_ids=[1002964172360929343, 701090852243505212]
 )
 
 miru.install(bot)
@@ -72,10 +72,11 @@ async def on_starting(event: hk.StartingEvent) -> None:
     )
     bot.d.dbcon = sqlite3.connect("botdb.db")
     bot.d.timeup = datetime.datetime.now().astimezone()
-    os.mkdir("pictures")
-    os.mkdir("pictures/visual")
-    os.mkdir("videos")
-    os.mkdir("logs")
+    if not os.path.exists("pictures"):
+        os.mkdir("pictures")
+        os.mkdir("pictures/visual")
+        os.mkdir("videos")
+        os.mkdir("logs")
     with open("./logs/log.txt", "w+") as f:
         pass
     setupLogging()
