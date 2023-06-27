@@ -1,4 +1,5 @@
 import datetime
+
 # from typing import Optional
 import asyncio
 import isodate
@@ -8,6 +9,7 @@ import glob
 import hikari as hk
 import lightbulb as lb
 from lightbulb.ext import tasks
+
 # from extPlugins.misc import get_top_colour
 
 task_plugin = lb.Plugin("Tasks", "Background processes")
@@ -16,6 +18,7 @@ task_plugin = lb.Plugin("Tasks", "Background processes")
 #TODO
 
 """
+
 
 @task_plugin.command
 @lb.option(
@@ -33,10 +36,15 @@ async def remind(ctx: lb.Context, task: str) -> None:
     print(task.split("in"))
     task, time = task.split("in")
     time = time.strip()
-    duration = datetime.datetime.now().astimezone() + isodate.parse_duration(f"PT{time.upper()}")
-    await ctx.respond(f"Got it, I'll remind you to {task} in <t:{int(duration.timestamp())}:R>")
+    duration = datetime.datetime.now().astimezone() + isodate.parse_duration(
+        f"PT{time.upper()}"
+    )
+    await ctx.respond(
+        f"Got it, I'll remind you to {task} in <t:{int(duration.timestamp())}:R>"
+    )
     await asyncio.sleep(isodate.parse_duration(f"PT{time.upper()}").total_seconds())
     await ctx.user.send(f"**Reminder to:** {task}")
+
 
 @tasks.task(d=7)
 async def clear_media_files():
@@ -46,6 +54,7 @@ async def clear_media_files():
         os.remove(f)
     print("Cleared")
 
+
 @tasks.task(d=14)
 async def clear_media_files():
     print("Clearing Media Files")
@@ -54,11 +63,13 @@ async def clear_media_files():
         os.remove(f)
     print("Cleared")
 
+
 @tasks.task(d=30)
 async def update_yt_dlp():
     os.system("yt-dlp -U")
-    #Done to prevent the -ytdl and -yts commands from breaking
+    # Done to prevent the -ytdl and -yts commands from breaking
     print("Updated the package yt-dlp")
+
 
 @tasks.task(d=30)
 async def logs_date():
@@ -67,6 +78,7 @@ async def logs_date():
 
 def load(bot: lb.BotApp) -> None:
     bot.add_plugin(task_plugin)
+
 
 def unload(bot: lb.BotApp) -> None:
     bot.remove_plugin(task_plugin)
