@@ -1,11 +1,7 @@
 import re
 import requests
 from datetime import datetime
-import asyncio
-import os
 
-from PIL import Image
-import io
 
 import lightbulb as lb
 import hikari as hk
@@ -16,33 +12,32 @@ from miru.ext import nav
 from extensions.dir import GenericButton
 from extPlugins.misc import requestsFailedError
 
-"""
-#TODO
-1. Change the resolution of images gotten for preview (check: shorturl.at/qwHV6)✅
-2. Make it refer to the original message (info embed)🌊
-3. Custom navigator buttons (inc. kill button) 〰
-"""
+
+# TODO
+# 1. Change the resolution of images gotten for preview (check: shorturl.at/qwHV6)✅
+# 2. Make it refer to the original message (info embed)🌊
+# 3. Custom navigator buttons (inc. kill button) 〰
+
 
 al_listener = lb.Plugin(
     "Weeb", "Search functions for anime, manga and characters (with an easter egg)"
 )
 
-regex = r"\b(https?:\/\/)?(www.)?anilist.co\/(anime|manga)\/(\d{1,6})"
-pattern = re.compile(regex)
+pattern = re.compile(r"\b(https?:\/\/)?(www.)?anilist.co\/(anime|manga)\/(\d{1,6})")
 
 
-async def getImpInfo(chapters):
-    volumeLast = list(chapters["volumes"].keys())[0]
-    chapterLast = list(chapters["volumes"][volumeLast]["chapters"].keys())[0]
-    idLast = chapters["volumes"][volumeLast]["chapters"][chapterLast]["id"]
+async def get_imp_info(chapters):
+    volume_last = list(chapters["volumes"].keys())[0]
+    chapter_last = list(chapters["volumes"][volume_last]["chapters"].keys())[0]
+    id_last = chapters["volumes"][volume_last]["chapters"][chapter_last]["id"]
 
-    volumeFirst = list(chapters["volumes"].keys())[-1]
-    chapterFirst = list(chapters["volumes"][volumeFirst]["chapters"].keys())[-1]
-    idFirst = chapters["volumes"][volumeFirst]["chapters"][chapterFirst]["id"]
+    volume_first = list(chapters["volumes"].keys())[-1]
+    chapter_first = list(chapters["volumes"][volume_first]["chapters"].keys())[-1]
+    id_first = chapters["volumes"][volume_first]["chapters"][chapter_first]["id"]
 
     return {
-        "latest": {"chapter": chapterLast, "id": idLast},
-        "first": {"chapter": chapterFirst, "id": idFirst},
+        "latest": {"chapter": chapter_last, "id": id_last},
+        "first": {"chapter": chapter_first, "id": id_first},
     }
 
 
@@ -54,16 +49,16 @@ async def al_link_finder(event: hk.GuildMessageCreateEvent) -> None:
     if event.is_bot:
         return
     # print(event.message.content)
-    listOfSeries = pattern.findall(event.message.content) or []
+    list_of_series = pattern.findall(event.message.content) or []
     # a = hk.MessageFlag
-    # print(listOfSeries)
-    if len(listOfSeries) != 0:
+    # print(list_of_series)
+    if len(list_of_series) != 0:
         await event.message.respond("Beep, bop. AniList link found")
         await al_listener.bot.rest.edit_message(
             event.channel_id, event.message, flags=hk.MessageFlag.SUPPRESS_EMBEDS
         )
 
-        for series in listOfSeries:
+        for series in list_of_series:
             # print(series)
             query = """
 query ($id: Int, $search: String, $type: MediaType) { # Define which variables will be used in the query (id)
@@ -138,7 +133,7 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
                 .set_author(url=response["siteUrl"], name=title)
                 .set_footer(
                     text="Source: AniList",
-                    icon="https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/AniList_logo.svg/1024px-AniList_logo.svg.png",
+                    icon="https://i.imgur.com/NYfHiuu.png",
                 ),
             )
 
@@ -147,7 +142,7 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
 
 # @al_listener.listener(hk.GuildReactionAddEvent)
 # async def pinner(event: hk.GuildReactionAddEvent) -> None:
-#     ...
+
 @al_listener.command
 @lb.option(
     "media",
@@ -167,8 +162,8 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def al_search(ctx: lb.Context, type: str, media: str) -> None:
     query = """
-query ($id: Int, $search: String, $type: MediaType) { # Define which variables will be used in the query (id)
-  Media (id: $id, search: $search, type: $type, sort: POPULARITY_DESC) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
+query ($id: Int, $search: String, $type: MediaType) { # Define which variables will be used (id)
+  Media (id: $id, search: $search, type: $type, sort: POPULARITY_DESC) { # Add variables to query (id) (type: ANIME is hard-coded)
     id
     idMal
     title {
@@ -257,7 +252,7 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
             .set_author(url=response["siteUrl"], name=title)
             .set_footer(
                 text="Source: AniList",
-                icon="https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/AniList_logo.svg/1024px-AniList_logo.svg.png",
+                icon="https://i.imgur.com/NYfHiuu.png",
             )
         )
         return
@@ -285,7 +280,7 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
     # print(r.status_code)
     # print(r.json())
     # print([chapter["id"] for chapter in r.json()["data"]])
-    data = await getImpInfo(r.json())
+    data = await get_imp_info(r.json())
 
     if no_of_items == "NA":
         no_of_items = f"[{data['latest']['chapter'].split('.')[0]}](https://cubari.moe/read/mangadex/{manga_id})"
@@ -319,7 +314,7 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
         .set_author(url=response["siteUrl"], name=title)
         .set_footer(
             text="Source: AniList",
-            icon="https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/AniList_logo.svg/1024px-AniList_logo.svg.png",
+            icon="https://i.imgur.com/NYfHiuu.png",
         ),
         components=view,
     )
@@ -421,8 +416,8 @@ async def search_animanga(ctx: lb.Context, type: str, media: str):
     t1 = datetime.now().timestamp()
 
     query = """
-query ($id: Int, $search: String, $type: MediaType) { # Define which variables will be used in the query (id)
-  Media (id: $id, search: $search, type: $type, sort: POPULARITY_DESC) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
+query ($id: Int, $search: String, $type: MediaType) { # Define which variables will be used (id)
+  Media (id: $id, search: $search, type: $type, sort: POPULARITY_DESC) { # Add var. to the query
     id
     idMal
     title {
@@ -500,7 +495,7 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
             .set_author(url=response["siteUrl"], name=title)
             .set_footer(
                 text="Source: AniList",
-                icon="https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/AniList_logo.svg/1024px-AniList_logo.svg.png",
+                icon="https://i.imgur.com/NYfHiuu.png",
             )
         )
         return
@@ -518,7 +513,7 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
         params={"translatedLanguage[]": languages},
     )
 
-    data = await getImpInfo(await r.json())
+    data = await get_imp_info(await r.json())
 
     if no_of_items == "NA":
         no_of_items = f"[{data['latest']['chapter'].split('.')[0]}](https://cubari.moe/read/mangadex/{manga_id})"
@@ -552,7 +547,7 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
         .set_author(url=response["siteUrl"], name=title)
         .set_footer(
             text="Source: AniList",
-            icon="https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/AniList_logo.svg/1024px-AniList_logo.svg.png",
+            icon="https://i.imgur.com/NYfHiuu.png",
         ),
         components=view,
     )
@@ -649,7 +644,7 @@ async def topanime(ctx: lb.PrefixContext, filter: str = None):
                 .set_author(name="Top Anime")
                 .set_footer(
                     "Fetched via MyAnimeList.net",
-                    icon="https://image.myanimelist.net/ui/OK6W_koKDTOqqqLDbIoPAiC8a86sHufn_jOI-JGtoCQ",
+                    icon="https://i.imgur.com/deFPj7Z.png",
                 )
             )
 
@@ -665,42 +660,6 @@ async def topanime(ctx: lb.PrefixContext, filter: str = None):
             return
 
 
-# @al_listener.command
-# @lb.command("navi", "navi")
-# @lb.implements(lb.PrefixCommand)
-# async def navi_check(ctx: lb.PrefixContext):
-#     pages = []
-#     pages.append(
-#         hk.Embed(
-#             title="Link Image"
-#         )
-#         .set_image("https://ichef.bbci.co.uk/news/976/cpsprodpb/16620/production/_91408619_55df76d5-2245-41c1-8031-07a4da3f313f.jpg")
-#     )
-#     pages.append(
-#         hk.Embed(
-#             title="Local Image"
-#         )
-#         .set_image("./pictures/bocchi.png")
-#     )
-#     pages.append(
-#         hk.Embed(
-#             title="Link Image2"
-#         )
-#         .set_image("https://whatnerd.com/wp-content/uploads/2021/02/trubbish-weird-pokemon.jpg")
-#     )
-#     buttons = [
-#         nav.PrevButton(
-#             style=hk.ButtonStyle.SECONDARY,
-#             emoji=hk.Emoji.parse("<:pink_arrow_left:1059905106075725955>")
-#         ),
-#         nav.IndicatorButton(),
-#         nav.NextButton(
-#             style=hk.ButtonStyle.SECONDARY,
-#             emoji=hk.Emoji.parse("<:pink_arrow_right:1059900771816189953>")
-#         )
-#         ]
-#     navigator = nav.NavigatorView(pages=pages, buttons=buttons)
-#     await navigator.send(ctx.channel_id)
 
 
 @al_search.set_error_handler
@@ -717,8 +676,8 @@ async def gallery_errors_handler(event: lb.CommandErrorEvent) -> bool:
 
 async def search_character(ctx: lb.Context, character: str):
     query = """
-query ($id: Int, $search: String) { # Define which variables will be used in the query (id)
-  Character (id: $id, search: $search,  sort: FAVOURITES_DESC) { # Insert our variables into the query arguments (id)
+query ($id: Int, $search: String) { # Define which variables will be used in the query
+  Character (id: $id, search: $search,  sort: FAVOURITES_DESC) { # Add var. to the query
     id
     name {
       full
@@ -813,7 +772,7 @@ query ($id: Int, $search: String) { # Define which variables will be used in the
         .set_author(url=response["siteUrl"], name=title)
         .set_footer(
             text="Source: AniList",
-            icon="https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/AniList_logo.svg/1024px-AniList_logo.svg.png",
+            icon="https://i.imgur.com/NYfHiuu.png",
         )
     )
     return

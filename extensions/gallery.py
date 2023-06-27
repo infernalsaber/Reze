@@ -4,11 +4,11 @@
 1. Button Styles, make them look less bad✅
 2. 3x3
 """
-import os, lxml, re, json, urllib.request, requests
+import re
+import json
+import requests
 from bs4 import BeautifulSoup
 from PIL import Image
-from datetime import datetime
-from typing import Optional
 
 import hikari as hk
 import lightbulb as lb

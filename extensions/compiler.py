@@ -1,7 +1,6 @@
 # import os, lxml, re, json, urllib.request, requests
 # from bs4 import BeautifulSoup
 # from PIL import Image
-from datetime import datetime
 
 # from typing import Optional
 

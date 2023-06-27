@@ -1,15 +1,11 @@
-import asyncio
-
 import hikari as hk
 import lightbulb as lb
 import miru
 from miru.ext import nav
 
 from datetime import datetime
-from typing import Union, Optional
 import os
 
-import asyncpraw
 import requests
 import random
 import re

@@ -6,12 +6,10 @@ import dotenv
 import hikari as hk
 import lightbulb as lb
 import miru
-from miru.ext import nav
 from lightbulb.ext import tasks
 
 import datetime
 import asyncpraw
-import sys
 
 import sqlite3
 
@@ -20,12 +18,12 @@ import logging
 dotenv.load_dotenv()
 
 
-"""
-#TODO
-1. Create a global error handler (shorturl.at/dowBG)✔
-"""
+# TODO
+# 1. Create a global error handler (shorturl.at/dowBG)✔
 
-# The following snippet is borrowed from:https://github.com/Nereg/ARKMonitorBot/blob/1a6cedf34d531bddf0f5b11b3238344192998997/src/main.py#L14
+
+# The following snippet is borrowed from:
+# https://github.com/Nereg/ARKMonitorBot/blob/1a6cedf34d531bddf0f5b11b3238344192998997/src/main.py#L14
 
 
 def setupLogging() -> None:

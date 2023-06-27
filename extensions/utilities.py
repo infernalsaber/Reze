@@ -1,16 +1,13 @@
-from datetime import datetime
-from typing import Optional
-
 import hikari as hk
 import lightbulb as lb
 
 util_plugin = lb.Plugin("Utility", "Commands intended to up the UX")
 
-"""
-#TODO
-1. Implement a /embed command with option to add which channel to send to ✅
-2. Implement a /announce command (options for role mention and channel) ✔
-"""
+
+# TODO
+# 1. Implement a /embed command with option to add which channel to send to ✅
+# 2. Implement a /announce command (options for role mention and channel) ✔
+
 
 
 @util_plugin.command
