@@ -1,9 +1,5 @@
-from datetime import datetime
-from typing import Optional
-
 import hikari as hk
 import lightbulb as lb
-import miru
 from miru.ext import nav
 
 from extPlugins.misc import CustomPrevButton, CustomNextButton

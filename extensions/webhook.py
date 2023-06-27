@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import hikari as hk
 import lightbulb as lb
 
@@ -7,10 +5,10 @@ import lightbulb as lb
 webhook_plugin = lb.Plugin("Webhook", "Utilize webhooks")
 
 
-"""
-#TODO
-Set the webhook to respond only at certain times, guild message listener
-"""
+
+# TODO
+# Set the webhook to respond only at certain times, guild message listener
+
 
 
 @webhook_plugin.command

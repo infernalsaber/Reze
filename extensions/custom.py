@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Optional
 
 import hikari as hk
@@ -7,7 +6,6 @@ import lightbulb as lb
 from extPlugins.misc import type_of_response
 from extPlugins.misc import injectionRiskError
 
-import sqlite3
 
 customcmd_plugin = lb.Plugin("Custom Commands")
 

@@ -1,6 +1,5 @@
-from typing import Optional, Union, Sequence
-import datetime
-from PIL import Image, ImageDraw, ImageOps, ImageFont, ImageFilter
+from typing import Optional, Sequence
+from PIL import Image, ImageDraw, ImageOps, ImageFont
 import io
 import os
 import fast_colorthief
@@ -20,19 +19,19 @@ import random
 
 image_plugin = lb.Plugin("Image Tools", "Apply cool and useful effects to images")
 
-"""
-
-#TODO
 
 
-1. Generate palette from the given image (implement it like a card)
-2. Filters: Blurple, Sharpen etc. + Color Visualize 
-3. Masked Wordcloud
-4. Remove BG
-5. Compress Image
-6. Background Blur
-7. Colourize(?)
-"""
+# TODO
+
+
+# 1. Generate palette from the given image (implement it like a card)
+# 2. Filters: Blurple, Sharpen etc. + Color Visualize 
+# 3. Masked Wordcloud
+# 4. Remove BG
+# 5. Compress Image
+# 6. Background Blur
+# 7. Colourize(?)
+
 
 
 async def color_palette(

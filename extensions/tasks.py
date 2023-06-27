@@ -6,7 +6,6 @@ import isodate
 import os
 import glob
 
-import hikari as hk
 import lightbulb as lb
 from lightbulb.ext import tasks
 
@@ -14,10 +13,6 @@ from lightbulb.ext import tasks
 
 task_plugin = lb.Plugin("Tasks", "Background processes")
 
-"""
-#TODO
-
-"""
 
 
 @task_plugin.command
@@ -47,7 +42,7 @@ async def remind(ctx: lb.Context, task: str) -> None:
 
 
 @tasks.task(d=7)
-async def clear_media_files():
+async def clear_video_files():
     print("Clearing Media Files")
     files = glob.glob("./videos/*")
     for f in files:
@@ -56,7 +51,7 @@ async def clear_media_files():
 
 
 @tasks.task(d=14)
-async def clear_media_files():
+async def clear_pic_files():
     print("Clearing Media Files")
     files = glob.glob("./pictures/*")
     for f in files:

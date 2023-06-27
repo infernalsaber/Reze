@@ -1,8 +1,5 @@
-from typing import Optional
 from PIL import Image
-import datetime
 import re
-from dataclasses import replace
 import requests
 import os
 
@@ -24,12 +21,12 @@ dotenv.load_dotenv()
 
 YT_KEY = os.environ["yt_key"]
 
-"""
-#TODO
-1. Add kill butttons on -yts views ✅
-2. Add back button on the second view of -yts
-3. Remove view on timeout
-"""
+
+# TODO
+# 1. Add kill butttons on -yts views ✅
+# 2. Add back button on the second view of -yts
+# 3. Remove view on timeout
+
 
 
 class YTVideo:

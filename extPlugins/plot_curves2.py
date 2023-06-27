@@ -2,13 +2,9 @@ import requests
 from operator import itemgetter
 import datetime
 
-from PIL import Image
-import io
 
 import numpy as np
 
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import plotly.io as pio
 
 
