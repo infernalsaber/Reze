@@ -14,20 +14,21 @@ welcome_pics = [
     "https://soranews24.com/wp-content/uploads/sites/3/2014/05/ssom.jpg"
 ]
 
-
+# Custom welcoming for a particular server
 @welcome.listener(hk.GuildJoinEvent)
 async def welcome_ftn(event: hk.GuildJoinEvent) -> None:
-    
+    if event.guild_id != 997042589117194270:
+        return
     welcome_embed = hk.Embed(
         
-        title=f"Welcome to the {event.fetch_guild().name} server",
+        title=f"Welcome to the {event.guil.name} server",
         content = "• Remember to follow rules and stuff \
             \n• Behave like a normal human being \
             \n• Enjoy",
         color= 0xf4eae9,
     ).set_image(random.choice(welcome_pics))
     
-    welcome.bot.rest.create_message(channel, welcome_embed)
+    welcome.bot.rest.create_message(998326870556807230, welcome_embed)
 
 
 
