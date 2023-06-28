@@ -1,8 +1,5 @@
 """
-#TODO
-
-1. Button Styles, make them look less bad✅
-2. 3x3
+This is the module to make 3x3s or find Google Image results
 """
 import re
 import json
@@ -19,27 +16,31 @@ from extPlugins.misc import CustomPrevButton, CustomNextButton
 
 gallery_plugin = lb.Plugin("Gallery", "Get a gallery or a collage of images")
 
+# TODO
+# 1. Button Styles, make them look less bad✅
+# 2. 3x3 ✅
 
-def originalImages(soup):
+
+def original_images(soup):
     googleImages = []
 
-    allScriptTags = soup.select("script")
+    all_script_tags = soup.select("script")
 
-    matchedImagesData = "".join(
-        re.findall(r"AF_initDataCallback\(([^<]+)\);", str(allScriptTags))
+    matched_images_data = "".join(
+        re.findall(r"AF_initDataCallback\(([^<]+)\);", str(all_script_tags))
     )
 
-    matchedImagesDataFix = json.dumps(matchedImagesData)
-    matchedImagesDataJSON = json.loads(matchedImagesDataFix)
+    matched_images_data_fix = json.dumps(matched_images_data)
+    matched_images_data_json = json.loads(matched_images_data_fix)
 
-    matchedGoogleImageData = re.findall(
-        r"\"b-GRID_STATE0\"(.*)sideChannel:\s?{}}", matchedImagesDataJSON
+    matched_google_image_data = re.findall(
+        r"\"b-GRID_STATE0\"(.*)sideChannel:\s?{}}", matched_images_data_json
     )
 
-    matchedGoogleImageThumbnails = ", ".join(
+    matched_google_image_thumbnails = ", ".join(
         re.findall(
             r"\[\"(https\:\/\/encrypted-tbn0\.gstatic\.com\/images\?.*?)\",\d+,\d+\]",
-            str(matchedGoogleImageData),
+            str(matched_google_image_data),
         )
     ).split(", ")
 
@@ -47,34 +48,34 @@ def originalImages(soup):
         bytes(bytes(thumbnail, "ascii").decode("unicode-escape"), "ascii").decode(
             "unicode escape"
         )
-        for thumbnail in matchedGoogleImageThumbnails
+        for thumbnail in matched_google_image_thumbnails
     ]
 
-    removedMatchedGoogleImagesThumbnails = re.sub(
+    removed_matched_google_images_thumbnails = re.sub(
         r"\[\"(https\:\/\/encrypted-tbn0\.gstatic\.com\/images\?.*?)\",\d+,\d+\]",
         "",
-        str(matchedGoogleImageData),
+        str(matched_google_image_data),
     )
 
-    matchedGoogleFullResolutionImages = re.findall(
+    matched_google_full_resolution_images = re.findall(
         r"(?:'|,),\[\"(https:|http.*?)\",\d+,\d+\]",
-        removedMatchedGoogleImagesThumbnails,
+        removed_matched_google_images_thumbnails,
     )
 
-    fullResImages = [
+    full_res_images = [
         bytes(bytes(img, "ascii").decode("unicode-escape"), "ascii").decode(
             "unicode-escape"
         )
-        for img in matchedGoogleFullResolutionImages
+        for img in matched_google_full_resolution_images
     ]
     # print("Parsing shit")
-    # print(fullResImages[0:2])
+    # print(full_res_images[0:2])
     for index, (metadata, thumbnail, original) in enumerate(
-        zip(soup.select(".isv-r.PNCib.MSM1fd.BUooTd"), thumbnails, fullResImages),
+        zip(soup.select(".isv-r.PNCib.MSM1fd.BUooTd"), thumbnails, full_res_images),
         start=1,
     ):
         try:
-            googleImages.append(
+            google_images.append(
                 {
                     "title": metadata.select_one(".VFACy.kGQAp.sMi44c.lNHeqe.WGvvNb")[
                         "title"
@@ -89,7 +90,7 @@ def originalImages(soup):
             )
         except Exception as e:
             print("Google is shit")
-            googleImages.append(
+            google_images.append(
                 {
                     "thumbnail": thumbnail,
                     "source": "Unknown",
@@ -98,8 +99,8 @@ def originalImages(soup):
                 }
             )
 
-    # print(googleImages)
-    return googleImages
+    # print(google_images)
+    return google_images
 
 
 async def lookfor(query: str, num: int = 9):
@@ -113,14 +114,14 @@ async def lookfor(query: str, num: int = 9):
         "gl": "us",  # country to fetch results from
         "ijn": "0",
     }
-    req = requests.session()
+    # req = requests.session()
     async with gallery_plugin.bot.d.aio_session.get(
         "https://www.google.com/search", params=params, headers=headers, timeout=30
     ) as html:
-        # html = req.get("https://www.google.com/search", params=params, headers=headers, timeout=30) !!!
+        # html = req.get("https://www.google.com/search",params=params,headers=headers,timeout=30)
         # print("Fetched g search")
         soup = BeautifulSoup(await html.text(), "lxml")
-    return originalImages(soup)[:num]
+    return original_images(soup)[:num]
 
 
 class MyNavButton(nav.NavButton):
@@ -147,8 +148,8 @@ async def gallery(ctx: lb.Context) -> None:
     pages = []
     query = ctx.options["query"]
 
-    responseData = await lookfor(query)
-    for data in responseData:
+    response_data = await lookfor(query)
+    for data in response_data:
         pages.append(
             hk.Embed()
             .set_image(data["original"])
@@ -169,8 +170,8 @@ async def img_gallery_menu(ctx: lb.MessageContext):
     pages = []
     query = ctx.options["target"].content
 
-    responseData = await lookfor(query)
-    for data in responseData:
+    response_data = await lookfor(query)
+    for data in response_data:
         pages.append(
             hk.Embed()
             .set_image(data["original"])
@@ -240,7 +241,7 @@ async def collage(ctx: lb.Context, values: str) -> None:
 
 @gallery.set_error_handler
 async def gallery_errors_handler(event: lb.CommandErrorEvent) -> bool:
-    exception = event.exception.__cause__ or event.exception
+    # exception = event.exception.__cause__ or event.exception
 
     # if isinstance(exception, lb.MissingRequiredPermission):
     #     await event.context.respond("You're missing some perms there, bub.")

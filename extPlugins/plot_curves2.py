@@ -1,6 +1,6 @@
-import requests
 from operator import itemgetter
 import datetime
+import requests
 
 
 import numpy as np
@@ -8,11 +8,11 @@ import numpy as np
 import plotly.io as pio
 
 
-async def searchIt(searchQuery: str) -> dict | int:
+async def searchIt(search_query: str) -> dict | int:
     # Here we define our query as a multi-line string
     query = """
-query ($id: Int, $search: String) { # Define which variables will be used in the query (id)
-    Media (id: $id, search: $search, type: ANIME, sort: POPULARITY_DESC) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
+query ($id: Int, $search: String) { 
+    Media (id: $id, search: $search, type: ANIME, sort: POPULARITY_DESC) { 
         id
         title {
             english
@@ -39,13 +39,12 @@ query ($id: Int, $search: String) { # Define which variables will be used in the
 
     """
 
-    # Define our query variables and values that will be used in the query request
-    variables = {"search": searchQuery}
-
-    url = "https://graphql.anilist.co"
-
     # Make the HTTP Api request
-    response = requests.post(url, json={"query": query, "variables": variables})
+    response = requests.post(
+        "https://graphql.anilist.co",
+        json={"query": query, "variables": {"search": search_query}},
+        timeout=10,
+    )
     if response.status_code == 200:
         print("Successfull connection")
         data = response.json()["data"]["Media"]
@@ -130,7 +129,7 @@ query ($id: Int, $search: String) { # Define which variables will be used in the
             return response.status_code
             break
 
-    """Parsing the values"""
+    # Parsing the values
 
     dates = []
     trends = []
@@ -154,13 +153,13 @@ query ($id: Int, $search: String) { # Define which variables will be used in the
         if value["averageScore"]:
             scores.append(value["averageScore"])
 
-    """Sending the data back"""
+    # Sending the data back
 
     pio.renderers.default = "notebook"
 
-    x_axis = np.array(dates)
+    # x_axis = np.array(dates)
 
-    y_axis = np.array(trends)
+    # y_axis = np.array(trends)
 
     return dict(
         name=name, data=[dates, trends, dates2, trends2, dates[-len(scores) :], scores]

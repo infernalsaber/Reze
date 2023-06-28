@@ -1,15 +1,15 @@
-from typing import Optional, Sequence
-from PIL import Image, ImageDraw, ImageOps, ImageFont
 import io
 import os
+from typing import Optional, Sequence
+from PIL import Image, ImageDraw, ImageOps, ImageFont
 import fast_colorthief
 
 import hikari as hk
 import lightbulb as lb
 
+import dotenv
 from extPlugins.misc import is_image
 
-import dotenv
 
 dotenv.load_dotenv()
 
@@ -20,12 +20,9 @@ import random
 image_plugin = lb.Plugin("Image Tools", "Apply cool and useful effects to images")
 
 
-
-# TODO
-
-
+# TDL
 # 1. Generate palette from the given image (implement it like a card)
-# 2. Filters: Blurple, Sharpen etc. + Color Visualize 
+# 2. Filters: Blurple, Sharpen etc. + Color Visualize
 # 3. Masked Wordcloud
 # 4. Remove BG
 # 5. Compress Image
@@ -33,19 +30,18 @@ image_plugin = lb.Plugin("Image Tools", "Apply cool and useful effects to images
 # 7. Colourize(?)
 
 
-
 async def color_palette(
-    dominantColor: tuple, paletteColors: Sequence[tuple]
+    dominant_color: tuple, palette_colors: Sequence[tuple]
 ) -> Image.Image:
-    imgFont = ImageFont.truetype("resources/fonts/TTNorms-Light.otf", size=30)
+    img_font = ImageFont.truetype("resources/fonts/TTNorms-Light.otf", size=30)
     mask = Image.new("RGBA", (960, 722), (0, 0, 0, 0))
     draw = ImageDraw.Draw(mask)
-    draw.rounded_rectangle([(45, 595), (430, 645)], 30, dominantColor)
+    draw.rounded_rectangle([(45, 595), (430, 645)], 30, dominant_color)
     draw.text(
         (175, 604),
-        str(hk.Color.of(dominantColor).hex_code),
+        str(hk.Color.of(dominant_color).hex_code),
         fill=(255, 255, 255),
-        font=imgFont,
+        font=img_font,
     )
 
     # ![pillow_composite_circle](data/dst/pillow_composite_circle.jpg)
@@ -56,18 +52,20 @@ async def color_palette(
     ).convert("RGBA")
     # img.show()
     final = Image.composite(mask, img, mask)
-    # imgFont = ImageFont.load_default()
+    # img_font = ImageFont.load_default()
 
     # final.show()
 
-    for i, color in enumerate(paletteColors):
+    for i, color in enumerate(palette_colors):
         color = hk.Color.of(color).hex_code
         mask = Image.new("RGBA", (960, 722), (0, 0, 0, 0))
         draw = ImageDraw.Draw(mask)
         draw.rounded_rectangle(
             [(496, 271 + (66 * i)), (884, 322 + (66 * i))], 30, color
         )
-        draw.text((625, 280 + (66 * i)), f"{color}", fill=(255, 255, 255), font=imgFont)
+        draw.text(
+            (625, 280 + (66 * i)), f"{color}", fill=(255, 255, 255), font=img_font
+        )
         final = Image.composite(mask, final, mask)
 
     # mask = Image.new("RGBA", (960,722), (0,0,0,0))
@@ -141,19 +139,17 @@ async def from_link(ctx: lb.Context, image: Optional[str], effect: str) -> None:
 
     await ctx.respond(
         hk.Embed(
-            description=f"Image Received, now processing...", color=0x00FFFF
-        ).set_image(
-            "https://mir-s3-cdn-cf.behance.net/project_modules/max_632/04de2e31234507.564a1d23645bf.gif"
-        )
+            description="Image Received, now processing...", color=0x00FFFF
+        ).set_image("https://i.imgur.com/GinlBL8.gif")
     )
 
     if not is_image(image):
-        wf = random.choice(("Marin", "Shinobu", "Megumin"))
-        if wf == "Marin":
+        wfu = random.choice(("Marin", "Shinobu", "Megumin"))
+        if wfu == "Marin":
             waifu_pic = (
                 await (
                     await ctx.bot.d.aio_session.get(
-                        f"https://api.waifu.im/search/?included_tags=marin-kitagawa"
+                        "https://api.waifu.im/search/?included_tags=marin-kitagawa"
                     )
                 ).json()
             )["images"][0]["url"]
@@ -161,14 +157,14 @@ async def from_link(ctx: lb.Context, image: Optional[str], effect: str) -> None:
             waifu_pic = (
                 await (
                     await ctx.bot.d.aio_session.get(
-                        f"https://api.waifu.pics/sfw/{wf.lower()}"
+                        f"https://api.waifu.pics/sfw/{wfu.lower()}"
                     )
                 ).json()
             )["url"]
         await ctx.edit_last_response(
             hk.Embed(
                 title="Nah, this ain't it ❌",
-                description=f"That doesn't look like an image. \nFor now enjoy this cute {wf} pic",
+                description=f"That doesn't look like an image. \nFor now enjoy this cute {wfu} pic",
                 color=0x00FFFF,
             ).set_image(waifu_pic),
             attachments=[],
@@ -177,7 +173,7 @@ async def from_link(ctx: lb.Context, image: Optional[str], effect: str) -> None:
 
     if effect == "Blurple":
         async with ctx.bot.d.aio_session.get(
-            "https://some-random-api.ml/canvas/blurple", params=dict(avatar=image)
+            "https://some-random-api.ml/canvas/blurple", params={"avatar": image}
         ) as res:
             if res.ok:
                 Image.open(io.BytesIO(await res.read())).convert("RGB").save(
@@ -198,7 +194,7 @@ async def from_link(ctx: lb.Context, image: Optional[str], effect: str) -> None:
     elif effect == "Remove Background":
         async with ctx.bot.d.aio_session.post(
             "https://api.remove.bg/v1.0/removebg",
-            data=dict(image_url=image, size="auto"),
+            data={"image_url": image, "size": "auto"},
             headers={"X-Api-Key": REMOVE_BG_KEY},
         ) as res:
             if res.ok:
@@ -251,15 +247,15 @@ async def from_link(ctx: lb.Context, image: Optional[str], effect: str) -> None:
 
 
 async def color_visualize(
-    hexCode: str, infoText: str = None, htmlColor: str = None
+    hex_code: str, info_text: str = None, html_color: str = None
 ) -> Image.Image:
-    imgFont = ImageFont.truetype("resources/fonts/TTNorms-Medium.otf", size=30)
+    img_font = ImageFont.truetype("resources/fonts/TTNorms-Medium.otf", size=30)
 
     mask = Image.new("RGBA", (960, 722), (0, 0, 0, 0))
     draw = ImageDraw.Draw(mask)
     draw.polygon([(0, 0), (0, 722), (357, 722), (117, 0)], fill=hexCode)
-    draw.text((440, 270), infoText, fill=(255, 255, 255), font=imgFont)
-    draw.text((480, 640), htmlColor, fill=(255, 255, 255), font=imgFont)
+    draw.text((440, 270), info_text, fill=(255, 255, 255), font=img_font)
+    draw.text((480, 640), html_color, fill=(255, 255, 255), font=img_font)
 
     img = Image.open(
         f"resources/visualize/{random.choice(os.listdir('resources/visualize'))}"
@@ -291,12 +287,13 @@ async def visualize(ctx: lb.Context, color: hk.Color) -> None:
     # TODO remove the typing for slash command
     async with ctx.bot.rest.trigger_typing(ctx.event.channel_id):
         async with ctx.bot.d.aio_session.get(
-            "https://www.thecolorapi.com/id", params=dict(hex=color.raw_hex_code)
+            "https://www.thecolorapi.com/id", params={"hex": color.raw_hex_code}
         ) as resp:
             if resp.ok:
                 resp = await resp.json()
                 # print(resp)
-                text1 = f"\nHex Code: {color.hex_code} \n\nRGB Value: {color.rgb} \n\nHTML5 Color: {resp['name']['exact_match_name']}"
+                text1 = f"\nHex Code: {color.hex_code} \n\n \
+                RGB Value: {color.rgb} \n\nHTML5 Color: {resp['name']['exact_match_name']}"
                 text2 = f"{resp['name']['closest_named_hex']} ({resp['name']['value']})"
 
         img = await color_visualize(color.hex_code, text1, text2)
@@ -322,7 +319,7 @@ async def palette(
     image = io.BytesIO(await image.read())
 
     if num == 1:
-        await ctx.respond(fast_colorthief.get_dominant_color(image, quality))
+        await ctx.respond(fast_colorthief.get_dominant_color(image, 1))
     else:
         pass
 

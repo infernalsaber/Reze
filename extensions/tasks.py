@@ -1,18 +1,15 @@
-import datetime
-
-# from typing import Optional
-import asyncio
-import isodate
 import os
 import glob
+import datetime
+
+import asyncio
+import isodate
 
 import lightbulb as lb
 from lightbulb.ext import tasks
 
-# from extPlugins.misc import get_top_colour
 
 task_plugin = lb.Plugin("Tasks", "Background processes")
-
 
 
 @task_plugin.command
@@ -54,8 +51,8 @@ async def clear_video_files():
 async def clear_pic_files():
     print("Clearing Media Files")
     files = glob.glob("./pictures/*")
-    for f in files:
-        os.remove(f)
+    for file in files:
+        os.remove(file)
     print("Cleared")
 
 

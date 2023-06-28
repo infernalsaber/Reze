@@ -1,11 +1,13 @@
+import datetime
+from typing import Optional, Union
+
+import asyncio
+import isodate
+
 import hikari as hk
 import lightbulb as lb
 from hikari import Permissions
 
-from typing import Optional, Union
-import isodate
-import datetime
-import asyncio
 
 mod_plugin = lb.Plugin(
     "Moderation Commands", "Self explanatory. Cool and powerful moderation tools"
@@ -91,7 +93,7 @@ async def kick_user(ctx: lb.Context, user: hk.User, reason: Optional[str]) -> No
 @lb.implements(
     lb.PrefixCommand,
 )
-async def kick_user(
+async def mute_user(
     ctx: lb.Context, user: hk.guilds.Member, time: str, reason: Optional[str]
 ) -> None:
     duration = datetime.datetime.now().astimezone() + isodate.parse_duration(
@@ -192,7 +194,7 @@ async def unban_user(ctx: lb.Context, user: str, reason: Optional[str]) -> None:
 @lb.implements(
     lb.PrefixCommand,
 )
-async def lock(ctx: lb.Context) -> None:
+async def hide_channel(ctx: lb.Context) -> None:
     overwrite = hk.PermissionOverwrite(
         id=980479965726404670,  # everyone role
         type=hk.PermissionOverwriteType.ROLE,
@@ -213,7 +215,7 @@ async def lock(ctx: lb.Context) -> None:
 @lb.implements(
     lb.PrefixCommand,
 )
-async def lock(ctx: lb.Context) -> None:
+async def unhide_channel(ctx: lb.Context) -> None:
     overwrite = hk.PermissionOverwrite(
         id=980479965726404670,  # everyone role
         type=hk.PermissionOverwriteType.ROLE,
@@ -239,38 +241,38 @@ async def hide_from(ctx: lb.Context, entity: Union[hk.Member, hk.Role]) -> None:
     await ctx.respond("Sorry, command in development 👨‍🔬")
     return
 
-    if isinstance(entity, hk.Member):
-        print("\n\nMember\n\n")
-    if isinstance(entity, hk.User):
-        print("\n\nUser\n\n")
-    if isinstance(entity, hk.Role):
-        print("\n\nRole\n\n")
-    print("Might be none too lol. ")
-    return
-    # print(type(entity))
-    # hk.Role
-    # hk.Role.id
-    if hk.User(entity).id:
-        print("Passes as user")
-        # print(entity.id)
-    elif type(entity) == hk.Role:
-        print("Passes as role")
-    else:
-        print("Passes as neither")
+    # if isinstance(entity, hk.Member):
+    #     print("\n\nMember\n\n")
+    # if isinstance(entity, hk.User):
+    #     print("\n\nUser\n\n")
+    # if isinstance(entity, hk.Role):
+    #     print("\n\nRole\n\n")
+    # print("Might be none too lol. ")
+    # return
+    # # print(type(entity))
+    # # hk.Role
+    # # hk.Role.id
+    # if hk.User(entity).id:
+    #     print("Passes as user")
+    #     # print(entity.id)
+    # elif isinstance(entity, hk.Role):
+    #     print("Passes as role")
+    # else:
+    #     print("Passes as neither")
 
-    overwrite = hk.PermissionOverwrite(
-        id=entity.id,
-        type=hk.PermissionOverwriteType.MEMBER,
-        allow=(Permissions.NONE),
-        deny=(Permissions.VIEW_CHANNEL | Permissions.SEND_MESSAGES),
-    )
-    # hk.PermissionOverwrite
-    await mod_plugin.bot.rest.edit_channel(
-        ctx.get_channel(), permission_overwrites=[overwrite]
-    )
-    await ctx.respond(
-        f"Channel hidden {hk.Emoji.parse('<a:peacedisappear: 1061571520457080882>')}."
-    )
+    # overwrite = hk.PermissionOverwrite(
+    #     id=entity.id,
+    #     type=hk.PermissionOverwriteType.MEMBER,
+    #     allow=(Permissions.NONE),
+    #     deny=(Permissions.VIEW_CHANNEL | Permissions.SEND_MESSAGES),
+    # )
+    # # hk.PermissionOverwrite
+    # await mod_plugin.bot.rest.edit_channel(
+    #     ctx.get_channel(), permission_overwrites=[overwrite]
+    # )
+    # await ctx.respond(
+    #     f"Channel hidden {hk.Emoji.parse('<a:peacedisappear: 1061571520457080882>')}."
+    # )
 
 
 @mod_plugin.command
@@ -293,7 +295,7 @@ async def remove_embed(ctx: lb.MessageContext):
 @lb.implements(
     lb.PrefixCommand,
 )
-async def lock(ctx: lb.Context) -> None:
+async def lock_channel(ctx: lb.Context) -> None:
     overwrite = hk.PermissionOverwrite(
         id=980479965726404670,
         type=hk.PermissionOverwriteType.ROLE,
@@ -315,7 +317,7 @@ async def lock(ctx: lb.Context) -> None:
 @lb.implements(
     lb.PrefixCommand,
 )
-async def lock(ctx: lb.Context) -> None:
+async def unlock_channel(ctx: lb.Context) -> None:
     overwrite = hk.PermissionOverwrite(
         id=980479965726404670,
         type=hk.PermissionOverwriteType.ROLE,
@@ -336,8 +338,9 @@ async def lock(ctx: lb.Context) -> None:
 @mod_plugin.command
 @lb.command("lockserv", "Lock the server⚡")
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
-async def lock(ctx: lb.Context) -> None:
-    # allowed_perms = Permissions.VIEW_CHANNEL | Permissions.CHANGE_NICKNAME | Permissions.READ_MESSAGE_HISTORY | Permissions.ADD_REACTIONS
+async def lock_server(ctx: lb.Context) -> None:
+    # allowed_perms = Permissions.VIEW_CHANNEL | Permissions.CHANGE_NICKNAME |
+    # Permissions.READ_MESSAGE_HISTORY | Permissions.ADD_REACTIONS
     await ctx.respond()
     overwrite = hk.PermissionOverwrite(
         id=980479965726404670,
@@ -351,7 +354,8 @@ async def lock(ctx: lb.Context) -> None:
             channel, permission_overwrites=[overwrite]
         )
 
-    # await mod_plugin.bot.rest.edit_role(ctx.get_guild(), 980479965726404670, permissions=allowed_perms)
+    # await mod_plugin.bot.rest.edit_role(
+    # ctx.get_guild(), 980479965726404670, permissions=allowed_perms)
     await ctx.edit_last_response(
         f"Server has been locked {hk.Emoji.parse('<a:Lock:1061237840358408192>')}"
     )
@@ -360,7 +364,7 @@ async def lock(ctx: lb.Context) -> None:
 @mod_plugin.command
 @lb.command("unlockserv", "Unlock the server👐")
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
-async def lock(ctx: lb.Context) -> None:
+async def unlock_server(ctx: lb.Context) -> None:
     allowed_perms = (
         Permissions.VIEW_CHANNEL
         | Permissions.CHANGE_NICKNAME
@@ -386,9 +390,9 @@ async def lock(ctx: lb.Context) -> None:
 async def preban_create(ctx: lb.Context, userid: hk.Snowflake):
     async with ctx.bot.rest.trigger_typing(ctx.event.channel_id):
         botdb = mod_plugin.bot.d.dbcon
-        c = botdb.cursor()
+        cur = botdb.cursor()
 
-        c.execute("INSERT INTO prebannedusers VALUES (?) ", (userid,))
+        cur.execute("INSERT INTO prebannedusers VALUES (?) ", (userid,))
         botdb.commit()
         await ctx.respond(f"Added user `<@{userid}>` to the preban list")
 
@@ -409,12 +413,12 @@ async def censor(ctx: lb.Context):
 async def censor_add(ctx: lb.Context, word: str) -> None:
     async with ctx.bot.rest.trigger_typing(ctx.event.channel_id):
         botdb = mod_plugin.bot.d.dbcon
-        c = botdb.cursor()
+        cur = botdb.cursor()
 
-        c.execute("INSERT INTO bannedwords VALUES (?) ", (word,))
+        cur.execute("INSERT INTO bannedwords VALUES (?) ", (word,))
         await ctx.respond(f"Adding word {word} to the banned words list")
         botdb.commit()
-        await ctx.edit_last_response(f"Added to the banned words list")
+        await ctx.edit_last_response("Added to the banned words list")
 
 
 @censor.child
@@ -426,13 +430,13 @@ async def censor_add(ctx: lb.Context, word: str) -> None:
     pass_options=True,
 )
 @lb.implements(lb.PrefixSubCommand)
-async def censor_add(ctx: lb.Context, word: str) -> None:
+async def censor_remove(ctx: lb.Context, word: str) -> None:
     async with ctx.bot.rest.trigger_typing(ctx.event.channel_id):
         botdb = mod_plugin.bot.d.dbcon
-        c = botdb.cursor()
-        c.execute("DELETE from bannedwords WHERE word= (?) ", (word,))
+        cur = botdb.cursor()
+        cur.execute("DELETE from bannedwords WHERE word= (?) ", (word,))
 
-        await ctx.respond(f"Removing word from the banned words list")
+        await ctx.respond("Removing word from the banned words list")
         botdb.commit()
         await ctx.edit_last_response(f"Removed {word} from the banned words list")
 
@@ -444,11 +448,11 @@ async def censor_add(ctx: lb.Context, word: str) -> None:
 async def banned_words(event: hk.GuildMessageCreateEvent) -> None:
     if event.is_bot:
         return
-    c = mod_plugin.bot.d.dbcon.cursor()
+    cur = mod_plugin.bot.d.dbcon.cursor()
     query = "SELECT * FROM bannedwords"
-    c.execute(query)
-    bannedWords = c.fetchall()
-    for word in bannedWords:
+    cur.execute(query)
+    banned_words = cur.fetchall()
+    for word in banned_words:
         if word[0] in event.message.content.lower():
             await event.message.respond(
                 f"Don't use banned words {hk.Emoji.parse('<:basedhalt:1013332614708461658>')}",
@@ -461,10 +465,10 @@ async def banned_words(event: hk.GuildMessageCreateEvent) -> None:
 
 @mod_plugin.listener(hk.MemberCreateEvent)
 async def preban(event: hk.MemberCreateEvent):
-    c = mod_plugin.bot.d.dbcon.cursor()
+    cur = mod_plugin.bot.d.dbcon.cursor()
     query = "SELECT * FROM prebannedusers WHERE userid=?"
     args = (event.member.id,)
-    c.execute(query, args)
+    cur.execute(query, args)
     banid = c.fetchone()
     if banid:
         if not event.member.is_bot:
@@ -495,30 +499,32 @@ async def sniper(event: hk.MessageDeleteEvent):
     # raise NotImplementedError
     return
 
-    message = event.old_message
+    # THIS FUNCTION IS ARCHIVED FOR THE ONE IN LOG
 
-    if message.author.is_bot:
-        return
+    # message = event.old_message
 
-    embedColor = 0x000000
-    # async for role in (await message.author.fetch_roles())[::-1]:
-    #     if role.color != hk.Color(0x000000):
-    #         embedColor = role.color
-    await mod_plugin.bot.rest.create_message(
-        channel=event.old_message.channel_id,
-        # content=f"message {message.content} by {message.author} {message.author.avatar_url}",
-        embed=hk.Embed(
-            description=message.content, color=embedColor, timestamp=message.timestamp
-        ).set_author(name=f"{message.author}", icon=message.author.avatar_url),
-    )
+    # if message.author.is_bot:
+    #     return
+
+    # embedColor = 0x000000
+    # # async for role in (await message.author.fetch_roles())[::-1]:
+    # #     if role.color != hk.Color(0x000000):
+    # #         embedColor = role.color
     # await mod_plugin.bot.rest.create_message(
-    #     channel=message.channel_id,
+    #     channel=event.old_message.channel_id,
+    #     # content=f"message {message.content} by {message.author} {message.author.avatar_url}",
     #     embed=hk.Embed(
-    #         description=message.content, timestamp=message.timestamp
-    #     )
-    #     .set_author(name=message.author, icon=message.author.default_avatar_url),
-    #     attachments=message.attachments
+    #         description=message.content, color=embedColor, timestamp=message.timestamp
+    #     ).set_author(name=f"{message.author}", icon=message.author.avatar_url),
     # )
+    # # await mod_plugin.bot.rest.create_message(
+    # #     channel=message.channel_id,
+    # #     embed=hk.Embed(
+    # #         description=message.content, timestamp=message.timestamp
+    # #     )
+    # #     .set_author(name=message.author, icon=message.author.default_avatar_url),
+    # #     attachments=message.attachments
+    # # )
 
     # await message.context.respond(
 
@@ -561,7 +567,7 @@ async def on_purge_error(event: lb.CommandErrorEvent) -> bool:
 
     # use a webhook for this?
     elif isinstance(exception, hk.errors.ForbiddenError):
-        await event.context.respond(f"Error: Can't DM this user.")
+        await event.context.respond("Error: Can't DM this user.")
 
     return False
 

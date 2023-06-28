@@ -5,12 +5,6 @@ import lightbulb as lb
 webhook_plugin = lb.Plugin("Webhook", "Utilize webhooks")
 
 
-
-# TODO
-# Set the webhook to respond only at certain times, guild message listener
-
-
-
 @webhook_plugin.command
 @lb.option(
     "message", "Message to say", str, modifier=lb.commands.OptionModifier.CONSUME_REST

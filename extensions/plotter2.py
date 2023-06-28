@@ -4,19 +4,12 @@ from PIL import Image
 import hikari as hk
 import lightbulb as lb
 
-# import miru
 
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.io as pio
 
 from extPlugins.plot_curves2 import searchIt
-
-# from datetime import datetime
-
-
-# TODO
-# 1. Make a subplot command wherein two graphs can be made
 
 
 plot_plugin = lb.Plugin(
@@ -50,7 +43,7 @@ async def plt_grp(ctx: lb.Context) -> None:
 async def plot_airing_trend(ctx: lb.Context, series: str) -> None:
     data = await searchIt(series)
 
-    if type(data) == int:
+    if isinstance(data, int):
         await ctx.respond(f"An error occurred, `code: {data}` ")
         return
     print(type(data))
@@ -63,7 +56,7 @@ async def plot_airing_trend(ctx: lb.Context, series: str) -> None:
             y=data["data"][1],
             mode="lines",
             name="Trends",
-            line='{"color": 'MediumTurquoise', "width": 2.5}',
+            line={"color": "MediumTurquoise", "width": 2.5},
         )
     )
     fig.add_trace(
@@ -72,14 +65,14 @@ async def plot_airing_trend(ctx: lb.Context, series: str) -> None:
             y=data["data"][3],
             mode="markers",
             name="Episodes",
-            line='{"color": 'MediumTurquoise', "width": 2.5}',
+            line={"color": "MediumTurquoise", "width": 2.5},
         )
     )
     fig.add_trace(
         go.Scatter(
             x=data["data"][4],
             y=data["data"][5],
-            line='{"color": 'DeepPink'}',
+            line={"color": "DeepPink"},
             name="Scores",
             mode="lines",
             line_shape="spline",
@@ -139,7 +132,7 @@ async def compare_trends(ctx: lb.Context, query: str) -> None:
                 y=data["data"][1],
                 mode="lines",
                 name=f"Trends {series[0]}",
-                line='{"color": 'MediumTurquoise', "width": 2.5}',
+                line={"color": "MediumTurquoise", "width": 2.5},
             )
         )
         fig.add_trace(
@@ -148,14 +141,14 @@ async def compare_trends(ctx: lb.Context, query: str) -> None:
                 y=data["data"][3],
                 mode="markers",
                 name=f"Episodes {series[0]}",
-                line='{"color": 'DarkTurquoise', "width": 2.5}',
+                line={"color": "DarkTurquoise", "width": 2.5},
             )
         )
         fig.add_trace(
             go.Scatter(
                 x=data["data"][4],
                 y=data["data"][5],
-                line='{"color": 'DeepPink'}',
+                line={"color": "DeepPink"},
                 name=f"Scores {series[0]}",
                 mode="lines",
                 line_shape="spline",
@@ -170,7 +163,7 @@ async def compare_trends(ctx: lb.Context, query: str) -> None:
                 y=data2["data"][1],
                 mode="lines",
                 name=f"Trends {series[1]}",
-                line='{"color": 'MediumSlateBlue', "width": 2.5}',
+                line={"color": "MediumSlateBlue", "width": 2.5},
             )
         )
         fig.add_trace(
@@ -179,14 +172,14 @@ async def compare_trends(ctx: lb.Context, query: str) -> None:
                 y=data2["data"][3],
                 mode="markers",
                 name=f"Episodes {series[1]}",
-                line='{"color": 'MediumSlateBlue', "width": 2.5}',
+                line={"color": "MediumSlateBlue", "width": 2.5},
             )
         )
         fig.add_trace(
             go.Scatter(
                 x=data2["data"][4],
                 y=data2["data"][5],
-                line='{"color": 'DarkOrchid'}',
+                line={"color": "DarkOrchid"},
                 name=f"Scores {series[1]}",
                 mode="lines",
                 line_shape="spline",

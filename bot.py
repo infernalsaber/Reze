@@ -1,19 +1,18 @@
 import os
 import asyncio
-import aiohttp
 import dotenv
+import datetime
+import sqlite3
+import logging
+import aiohttp
 
 import hikari as hk
 import lightbulb as lb
 import miru
 from lightbulb.ext import tasks
 
-import datetime
 import asyncpraw
 
-import sqlite3
-
-import logging
 
 dotenv.load_dotenv()
 
@@ -26,27 +25,27 @@ dotenv.load_dotenv()
 # https://github.com/Nereg/ARKMonitorBot/blob/1a6cedf34d531bddf0f5b11b3238344192998997/src/main.py#L14
 
 
-def setupLogging() -> None:
+def setup_logging() -> None:
     # get root logger
-    rootLogger = logging.getLogger("")
+    root_logger = logging.getLogger("")
     # create a rotating file handler with 1 backup file and 1 megabyte size
-    fileHandler = logging.handlers.RotatingFileHandler(
+    file_handler = logging.handlers.Rotatingfile_handler(
         "./logs/log.txt", "w+", 1_000_000, 1, "UTF-8"
     )
     # create a default console handler
-    consoleHandler = logging.StreamHandler()
+    console_handler = logging.StreamHandler()
     # create a formatting style (modified from hikari)
     formatter = logging.Formatter(
         fmt="%(levelname)-1.1s %(asctime)23.23s %(name)s @ %(lineno)d: %(message)s"
     )
     # add the formatter to both handlers
-    consoleHandler.setFormatter(formatter)
-    fileHandler.setFormatter(formatter)
+    console_handler.setFormatter(formatter)
+    file_handler.setFormatter(formatter)
     # add both handlers to the root logger
-    rootLogger.addHandler(fileHandler)
-    rootLogger.addHandler(consoleHandler)
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(console_handler)
     # set logging level to info
-    rootLogger.setLevel(logging.INFO)
+    root_logger.setLevel(logging.INFO)
 
 
 bot = lb.BotApp(
@@ -79,9 +78,9 @@ async def on_starting(event: hk.StartingEvent) -> None:
         os.mkdir("pictures/visual")
         os.mkdir("videos")
         os.mkdir("logs")
-    with open("./logs/log.txt", "w+") as f:
+    with open("./logs/log.txt", "w+"):
         pass
-    setupLogging()
+    setup_logging()
 
 
 @bot.listen()
@@ -134,7 +133,8 @@ async def on_error(event: lb.CommandErrorEvent) -> None:
 
     elif isinstance(exception, lb.NotEnoughArguments):
         await event.context.respond(
-            f"Missing arguments, use `-help {event.context.command.name}` for the correct invocation"
+            f"Missing arguments, use `-help {event.context.command.name}` \
+            for the correct invocation"
         )
 
 

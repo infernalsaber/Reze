@@ -1,7 +1,7 @@
-from PIL import Image
+import os
 import re
 import requests
-import os
+from PIL import Image
 
 import hikari as hk
 import lightbulb as lb
@@ -22,44 +22,53 @@ dotenv.load_dotenv()
 YT_KEY = os.environ["yt_key"]
 
 
-# TODO
+# TDL
 # 1. Add kill butttons on -yts views ✅
 # 2. Add back button on the second view of -yts
 # 3. Remove view on timeout
 
 
-
 class YTVideo:
     def __init__(self, searchResults: dict, i: int) -> None:
-        self.vName: str = searchResults["items"][i]["snippet"]["title"]
-        self.vId: str = searchResults["items"][i]["id"]["videoId"]
-        self.vThumb: str = searchResults["items"][i]["snippet"]["thumbnails"]["high"][
+        self.vid_name: str = searchResults["items"][i]["snippet"]["title"]
+        self.vid_id: str = searchResults["items"][i]["id"]["videoId"]
+        self.vid_thumb: str = searchResults["items"][i]["snippet"]["thumbnails"][
+            "high"
+        ][
             "url"
         ]  # make it medium later
-        self.vChannel: str = searchResults["items"][i]["snippet"]["channelTitle"]
+        self.vid_channel: str = searchResults["items"][i]["snippet"]["channelTitle"]
+        self.vid_duration: str = ""
         # pprint(searchResults["items"][i])
 
     def get_link(self) -> str:
-        return f"https://www.youtube.com/watch?v={self.vId}"
+        return f"https://www.youtube.com/watch?v={self.vid_id}"
 
     def set_duration(self, req) -> str:
         ytapi2 = req.get(
-            f"https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id={self.vId}&regionCode=US&key={YT_KEY}"
+            (
+                f"https://youtube.googleapis.com/youtube\/v3/videos?part=snippet%2Ccontent"
+                f"Details%2Cstatistics&id={self.vid_id}&regionCode=US&key={YT_KEY}"
+            )
         )
         ytapi2 = ytapi2.json()
-        self.vDuration = str(
+        self.vid_duration = str(
             isodate.parse_duration(ytapi2["items"][0]["contentDetails"]["duration"])
         )
-        if self.vDuration.startswith("0:"):
-            self.vDuration = str(
+        if self.vid_duration.startswith("0:"):
+            self.vid_duration = str(
                 isodate.parse_duration(ytapi2["items"][0]["contentDetails"]["duration"])
             )[2:]
-            return self.vDuration[2:]
-        return self.vDuration
+            return self.vid_duration[2:]
+        return self.vid_duration
 
     def get_duration_secs(self) -> int:
         ytapi2 = requests.get(
-            f"https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id={self.vId}&regionCode=US&key={YT_KEY}"
+            (
+                f"https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2Ccontent"
+                f"Details%2Cstatistics&id={self.vid_id}&regionCode=US&key={YT_KEY}"
+            ),
+            timeout=10,
         )
         ytapi2 = ytapi2.json()
         return int(
@@ -105,17 +114,17 @@ class NoButton(miru.Button):
         self.view.stop()
 
 
-class choiceButtons(miru.View):
-    # def __init__(self) -> None:
-    #     super.__init__(timeout=None)
+# class choiceButtons(miru.View):
+#     # def __init__(self) -> None:
+#     #     super.__init__(timeout=None)
 
-    @miru.button(label="1", style=hk.ButtonStyle.SECONDARY)
-    async def callback(self, button: miru.Button, ctx: miru.ViewContext) -> None:
-        await ctx.respond("You clicked me!", flags=hk.MessageFlag.EPHEMERAL)
+#     @miru.button(label="1", style=hk.ButtonStyle.SECONDARY)
+#     async def callback(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+#         await ctx.respond("You clicked me!", flags=hk.MessageFlag.EPHEMERAL)
 
-    @miru.button(label="new button", style=hk.ButtonStyle.SUCCESS)
-    async def second(self, button: miru.Button, ctx: miru.ViewContext) -> None:
-        await ctx.respond("You clicked neeww")
+#     @miru.button(label="new button", style=hk.ButtonStyle.SUCCESS)
+#     async def second(self, button: miru.Button, ctx: miru.ViewContext) -> None:
+#         await ctx.respond("You clicked neeww")
 
 
 yt_plugin = lb.Plugin("YouTube", "Search and get songs")
@@ -129,7 +138,7 @@ yt_plugin = lb.Plugin("YouTube", "Search and get songs")
     "youtubesearch", "Search YouTube and get videos", aliases=["yts"], pass_options=True
 )
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
-async def userinfo(ctx: lb.Context, query: str) -> None:
+async def youtube_search(ctx: lb.Context, query: str) -> None:
     if not (guild := ctx.get_guild()):
         await ctx.respond("This command may only be used in servers.")
         return
@@ -151,17 +160,20 @@ async def userinfo(ctx: lb.Context, query: str) -> None:
         await ctx.respond(f"Error occurred 😵, code `{response.status_code}`")
         return
     embed = hk.Embed()
-    lstVids = []
+    lst_vids = []
     embed.set_footer(f"Requested by: {ctx.author}", icon=ctx.author.avatar_url)
     view = miru.View()
     for i in range(5):
-        q = YTVideo(response.json(), i)
-        q.set_duration(req)
+        qvideo = YTVideo(response.json(), i)
+        qvideo.set_duration(req)
         embed.add_field(
             f"`{i+1}.`",
-            f"```ansi\n\u001b[0;35m{q.vName} \u001b[0;36m[{q.vDuration[2:] if q.vDuration.startswith('0:') else q.vDuration}] ```",
+            (
+                f"```ansi\n\u001b[0;35m{q.vid_name} \u001b[0;36m"
+                f"[{q.vid_duration[2:] if q.vid_duration.startswith('0:') else q.vid_duration}] ```"
+            ),
         )
-        lstVids.append(q)
+        lst_vids.append(qvideo)
 
         view.add_item(GenericButton(style=hk.ButtonStyle.SECONDARY, label=f"{i+1}"))
     view.add_item(KillButton(style=hk.ButtonStyle.DANGER, label="❌"))
@@ -177,21 +189,25 @@ async def userinfo(ctx: lb.Context, query: str) -> None:
     else:
         await ctx.edit_last_response("Process timed out.", embeds=[], views=[])
         return
-    vidIndex = int(view.answer) - 1
+    vid_index = int(view.answer) - 1
     view2 = miru.View()
     view2.add_item(YesButton())
     view2.add_item(NoButton(style=hk.ButtonStyle.DANGER, label="No"))
     choice = await ctx.edit_last_response(
         embed=hk.Embed(
-            title=lstVids[vidIndex].vName,
-            url=lstVids[vidIndex].get_link(),
+            title=lst_vids[vid_index].vid_name,
+            url=lst_vids[vid_index].get_link(),
             color=hk.Color.of(
                 get_dominant_colour(
-                    Image.open(requests.get(lstVids[vidIndex].vThumb, stream=True).raw)
+                    Image.open(
+                        requests.get(
+                            lst_vids[vid_index].vid_thumb, stream=True, timeout=10
+                        ).raw
+                    )
                 )
             ),
-            description=lstVids[vidIndex].vChannel,
-        ).set_image(lstVids[vidIndex].vThumb),
+            description=lst_vids[vid_index].vid_channel,
+        ).set_image(lst_vids[vid_index].vid_thumb),
         components=view2,
     )
 
@@ -199,7 +215,7 @@ async def userinfo(ctx: lb.Context, query: str) -> None:
     await view2.wait()
     if hasattr(view2, "answer"):  # Check if there is an answer
         await ctx.edit_last_response(
-            f"Video link: {lstVids[vidIndex].get_link()}",
+            f"Video link: {lst_vids[vid_index].get_link()}",
             embeds=[],
             flags=hk.MessageFlag.SUPPRESS_EMBEDS,
             components=[],
@@ -210,9 +226,9 @@ async def userinfo(ctx: lb.Context, query: str) -> None:
         await ctx.edit_last_response("Process timed out.", embeds=[], views=[])
         return
 
-    if len(lstVids[vidIndex].vDuration.split(":")) == 2:
-        netDuration = int(lstVids[vidIndex].vDuration[0]) * 60 + int(
-            lstVids[vidIndex].vDuration[1]
+    if len(lst_vids[vid_index].vid_duration.split(":")) == 2:
+        netDuration = int(lst_vids[vid_index].vid_duration[0]) * 60 + int(
+            lst_vids[vid_index].vid_duration[1]
         )
         if not netDuration < 60 or netDuration > 501:
             print(netDuration)
@@ -222,16 +238,16 @@ async def userinfo(ctx: lb.Context, query: str) -> None:
         await ctx.respond("Invalid time duration.")
         return
 
-    # if lstVids[vidIndex].get_duration_secs() < 60 or lstVids[vidIndex].get_duration_secs() > 601:
+    # if lst_vids[vid_index].get_duration_secs() < 60 or lst_vids[vid_index].get_duration_secs() > 601:
     #     await ctx.respond("Invalid time duration.")
     #     return
-    b = await downloadVideo(lstVids[vidIndex].get_link())
+    b = await downloadVideo(lst_vids[vid_index].get_link())
     if b:
         await ctx.respond(b)
     else:
         probable_name = (
-            lstVids[vidIndex]
-            .vName.replace("/", "⧸")
+            lst_vids[vid_index]
+            .vid_name.replace("/", "⧸")
             .replace("?", "？")
             .replace(":", "：")
             .replace("|", "｜")
@@ -250,13 +266,17 @@ async def userinfo(ctx: lb.Context, query: str) -> None:
     "youtubedownload", "Download a yt video", aliases=["ytdl"], pass_options=True
 )
 @lb.implements(lb.PrefixCommand)
-async def userinfo(ctx: lb.Context, video: str) -> None:
+async def youtube_download(ctx: lb.Context, video: str) -> None:
     pattern = re.search(
         r"\b(https?://)?(www\.)?(m.)?(youtube\.com|/watch\?v=|youtu\.be/)(\w+)", video
     )
     if pattern:
         resp = requests.get(
-            f"https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id={pattern[5]}&regionCode=US&key={YT_KEY}"
+            (
+                f"https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2Ccontent"
+                f"Details%2Cstatistics&id={pattern[5]}&regionCode=US&key={YT_KEY}"
+            ),
+            timeout=10,
         )
 
         if not resp.ok:

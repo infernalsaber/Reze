@@ -1,7 +1,8 @@
+import random
+
 import hikari as hk
 import lightbulb as lb
 
-import random
 
 welcome = lb.Plugin("Welcome", "Welcoming a newbie")
 
@@ -22,7 +23,7 @@ async def welcome_ftn(event: hk.GuildJoinEvent) -> None:
         return
     welcome_embed = hk.Embed(
         title=f"Welcome to the {event.guil.name} server",
-        content="• Remember to follow rules and stuff \
+        description="• Remember to follow rules and stuff \
             \n• Behave like a normal human being \
             \n• Enjoy",
         color=0xF4EAE9,

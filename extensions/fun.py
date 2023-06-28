@@ -1,19 +1,20 @@
+import user_agent
+import os
+from datetime import datetime
+import requests
+import random
+import re
+
 import hikari as hk
 import lightbulb as lb
 import miru
 from miru.ext import nav
 
-from datetime import datetime
-import os
 
-import requests
-import random
-import re
-
+import dotenv
 from extPlugins.misc import requestsFailedError
 from extPlugins.misc import CustomPrevButton, CustomNextButton
 
-import dotenv
 
 dotenv.load_dotenv()
 
@@ -21,8 +22,6 @@ DB_KEY = os.getenv("DANBOORU_KEY")
 DB_ID = os.getenv("DANBOORU_USER")
 
 fun_plugin = lb.Plugin("Fun", "Misc. commands serving no real purpose")
-
-import user_agent
 
 
 @fun_plugin.command
@@ -38,14 +37,14 @@ async def fun_group(ctx: lb.Context) -> None:
 async def meme_subcommand(ctx: lb.Context) -> None:
     async with ctx.bot.d.aio_session.get("https://meme-api.com/gimme") as response:
         res = await response.json()
-        if response.ok and res["nsfw"] != True:
+        if response.ok and res["nsfw"] is not True:
             embed = (
                 hk.Embed(color=0xF4EAE9)  # ,timestamp=datetime.now().astimezone()
                 .set_author(name=f"{res['title']} ({res['ups']}🔼)", url=res["postLink"])
                 .set_image(res["url"])
                 .set_footer(
                     text=f"Posted by: {res['author']} in r/{res['subreddit']}",
-                    icon="https://external-preview.redd.it/iDdntscPf-nfWKqzHRGFmhVxZm4hZgaKe5oyFws-yzA.png?width=640&crop=smart&auto=webp&s=bfd318557bf2a5b3602367c9c4d9cd84d917ccd5",
+                    icon="https://i.imgur.com/eQq9DC9.png",
                 )
             )
             await ctx.respond(embed)
@@ -158,7 +157,7 @@ async def joke_reddit(ctx: lb.Context) -> None:
                     .set_author(name=submission.title, url=submission.url)
                     .set_footer(
                         f"Posted by: {submission.author}",
-                        icon="https://icons.iconarchive.com/icons/limav/flat-gradient-social/512/Reddit-icon.png",
+                        icon="https://i.imgur.com/eQq9DC9.png",
                     )
                 )
                 flag = False
@@ -197,13 +196,14 @@ async def subreddit(ctx: lb.Context, subreddit: str) -> None:
                         color=0xF4EAE9,
                     )
                     .set_author(
-                        name=f"{submission.title} {submission.score}⬆, {int(submission.score*(1/submission.upvote_ratio-1))}⬇",
+                        name=f"{submission.title} {submission.score}⬆, \
+                        {int(submission.score*(1/submission.upvote_ratio-1))}⬇",
                         url=submission.url,
                     )
                     .set_image(submission.url)
                     .set_footer(
                         f"Posted by: {submission.author}",
-                        icon="https://icons.iconarchive.com/icons/limav/flat-gradient-social/512/Reddit-icon.png",
+                        icon="https://i.imgur.com/eQq9DC9.png",
                     )
                 )
                 flag = False
@@ -233,19 +233,21 @@ async def danbooru(ctx: lb.Context, tags: str, number: int = None) -> None:
     if not tags:
         response = requests.get(
             f"{url}/posts.json",
-            params=dict(limit=number + 5, api_key=DB_KEY, login=DB_ID, page=page),
+            params='{"limit": number + 5, "api_key": DB_KEY, "login": DB_ID, "page": page,}',
             headers=headers,
+            timeout=12,
         )
     else:
-        # response = requests.get(f"{url}/posts.json", params=dict(limit=number+5, tags=f"{tags}", api_key=DB_KEY, login=DB_ID, page=page), headers=headers)
+        # response = requests.get(f"{url}/posts.json", params=dict(limit=number+5, tags=f"{tags}",
+        # api_key=DB_KEY, login=DB_ID, page=page), headers=headers)
         response = requests.get(
             f"{url}/posts.json?limit={number+5}&tags={tags}&api_key={DB_KEY}&login={DB_ID}&page={page} ",
             headers=headers,
+            timeout=12,
         )
     if not response.ok:
         print(response.content)
         raise requestsFailedError
-        return
 
     pages = []
 

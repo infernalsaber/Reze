@@ -143,6 +143,7 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
 # @al_listener.listener(hk.GuildReactionAddEvent)
 # async def pinner(event: hk.GuildReactionAddEvent) -> None:
 
+
 @al_listener.command
 @lb.option(
     "media",
@@ -658,8 +659,6 @@ async def topanime(ctx: lb.PrefixContext, filter: str = None):
         else:
             raise requestsFailedError
             return
-
-
 
 
 @al_search.set_error_handler

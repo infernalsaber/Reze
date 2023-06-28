@@ -1,8 +1,8 @@
+import os
+
 import hikari as hk
 import lightbulb as lb
 
-
-import os
 
 logger = lb.Plugin("Log Commands", "Keeping a log of data, more to be added later")
 
@@ -24,7 +24,7 @@ async def on_stopping(event: hk.StoppingEvent) -> None:
 
 
 @logger.listener(hk.GuildMessageDeleteEvent)
-async def log(event: hk.GuildMessageDeleteEvent):
+async def delete_log(event: hk.GuildMessageDeleteEvent):
     # limiting it to a particular guild for testing
     if event.guild_id != 997042589117194270:
         return
@@ -33,7 +33,7 @@ async def log(event: hk.GuildMessageDeleteEvent):
     old_message = event.old_message
     print(dir(old_message))
     author = old_message.author
-    # TODO: Fix this shit
+    # TO: Fix this shit
     print(old_message.author)
     # if old_message.author.id != '204992650305077248':
     #     return
@@ -54,7 +54,7 @@ async def log(event: hk.GuildMessageDeleteEvent):
 
 
 @logger.listener(hk.GuildMessageUpdateEvent)
-async def log(event: hk.GuildMessageUpdateEvent):
+async def update_log(event: hk.GuildMessageUpdateEvent):
     # limiting it to a particular guild for testing
     if event.guild_id != 997042589117194270:
         return
@@ -82,7 +82,7 @@ async def log(event: hk.GuildMessageUpdateEvent):
 @lb.add_checks(lb.owner_only)
 @lb.command("logs", "Output the logs as a rar file", pass_options=True, aliases=["log"])
 @lb.implements(lb.PrefixCommand)
-async def logs(ctx: lb.Context) -> None:
+async def logs_zip(ctx: lb.Context) -> None:
     os.system("rar a logs.rar ./logs")
     await ctx.respond(attachment="logs.rar")
     os.remove("logs.rar")
