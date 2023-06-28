@@ -1,3 +1,4 @@
+"""Commonly used functions to ease utility"""
 import io
 from typing import Literal, Union, Optional
 import requests
@@ -11,6 +12,15 @@ import miru
 
 
 async def get_top_colour(user: hk.Member) -> hk.Color:
+    """Give the display colour of a user
+
+    Args:
+        user (hk.Member): The user
+
+    Returns:
+        hk.Color: The colour
+    """
+
     roles = (await user.fetch_roles())[1:]  # All but @everyone
     roles = sorted(
         roles, key=lambda role: role.position, reverse=True
@@ -24,6 +34,16 @@ async def get_top_colour(user: hk.Member) -> hk.Color:
 
 
 def get_dominant_colour(pillow_img: Image.Image, show: Optional[bool] = 0) -> hk.Color:
+    """Get the dominant colour of a PIL Image Object
+
+    Args:
+        pillow_img (Image.Image): The image
+        show (Optional[bool], optional): Whether to display the image (for testing). Defaults to 0.
+
+    Returns:
+        hk.Color: The dominant colour of the image object
+    """
+
     pillow_img = pillow_img.resize((1, 1), resample=0)
     dominant_color: tuple = pillow_img.getpixel((0, 0))
     if show:
@@ -33,24 +53,40 @@ def get_dominant_colour(pillow_img: Image.Image, show: Optional[bool] = 0) -> hk
 
 
 def get_image_dominant_colour(link: str) -> hk.Color:
+    """Get the dominant colour of an image from a link to it
+
+    Args:
+        link (str): Link to the image
+
+    Returns:
+        hk.Color: Dominant Colour
+    """
+
     return hk.Color.of(
         get_dominant_colour(Image.open(requests.get(link, stream=True, timeout=10).raw))
     )
 
 
 def is_image(link: str) -> bool:
+    """A function which returns whether or not a link refers to an image"""
+
     try:
         Image.open(io.BytesIO(requests.get(link, timeout=10).content))
         return True
     except Image.UnidentifiedImageError:
         return False
-    except Exception as e:
-        print(e)
+    except Exception as exp:
+        print(exp)
         return False
 
 
 # import enum
 def type_of_response(link: str) -> Literal["image", "json", "html", "unknown"]:
+    """A function to try to get the type of response in a link
+
+    Returns:
+        one of "image", "json", "html", or "unknown"
+    """
     response = requests.get(link, timeout=10)
     try:
         Image.open(io.BytesIO(response.content))
@@ -65,7 +101,7 @@ def type_of_response(link: str) -> Literal["image", "json", "html", "unknown"]:
     try:
         BeautifulSoup(response.text, "lxml")
         return "html"
-    except Exception as e:
+    except:
         return "unknown"
 
 
@@ -73,22 +109,20 @@ def type_of_response(link: str) -> Literal["image", "json", "html", "unknown"]:
 class CustomError(Exception):
     """Parent class for all custom errors the bot may encounter"""
 
-    pass
 
-
-class requestsFailedError(CustomError):
+class RequestsFailedError(CustomError):
     """
     Exception raised when the API the request is fetched from fails
     """
 
 
-class injectionRiskError(CustomError):
+class InjectionRiskError(CustomError):
     """
     Exception raised when the input may risk injection of code into the database
     """
 
 
-class fileSizeError(CustomError):
+class FileSizeError(CustomError):
     """
     Exception raised when trying to handle a file over the Discord upload
     size limit (25MB as of May 2023)

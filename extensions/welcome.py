@@ -1,3 +1,4 @@
+"""Welcome plugin"""
 import random
 
 import hikari as hk
@@ -19,6 +20,8 @@ welcome_pics = [
 # Custom welcoming for a particular server
 @welcome.listener(hk.GuildJoinEvent)
 async def welcome_ftn(event: hk.GuildJoinEvent) -> None:
+    """Welcome a member when they join the guild"""
+
     if event.guild_id != 997042589117194270:
         return
     welcome_embed = hk.Embed(
@@ -33,8 +36,10 @@ async def welcome_ftn(event: hk.GuildJoinEvent) -> None:
 
 
 def load(bot: lb.BotApp) -> None:
+    """Load the plugin"""
     bot.add_plugin(welcome)
 
 
 def unload(bot: lb.BotApp) -> None:
+    """Unload the plugin"""
     bot.remove_plugin(welcome)

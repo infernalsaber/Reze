@@ -1,3 +1,4 @@
+"""Walk a member through the cool commands of the bot"""
 import hikari as hk
 import lightbulb as lb
 from miru.ext import nav
@@ -17,6 +18,7 @@ walkthrough = lb.Plugin("Walkthrough", "Get to know all the cool commands")
 )
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def walkthrough_cmd(ctx: lb.Context) -> None:
+    """Walkthrough highlighting the cool commands of the bot"""
     # Lookup
     pages = []
     pages.append(
@@ -100,13 +102,16 @@ async def walkthrough_cmd(ctx: lb.Context) -> None:
 @lb.command("kms", "Kill the bot", aliases=["shutdown"])
 @lb.implements(lb.PrefixCommand)
 async def shutdown(ctx: lb.Context) -> None:
+    """Shut the bot down"""
     await ctx.respond("Shutting bot down...")
     await ctx.bot.close()
 
 
 def load(bot: lb.BotApp) -> None:
+    """Load the plugin"""
     bot.add_plugin(walkthrough)
 
 
 def unload(bot: lb.BotApp) -> None:
+    """Unload the plugin"""
     bot.remove_plugin(walkthrough)

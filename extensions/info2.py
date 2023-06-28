@@ -1,3 +1,4 @@
+"""Get information about a role, server, user, bot etc."""
 from datetime import datetime
 from typing import Optional
 import psutil
@@ -21,6 +22,13 @@ info_plugin = lb.Plugin("Info", "Get information about an entity")
 )
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def userinfo(ctx: lb.Context, user: Optional[hk.User] = None) -> None:
+    """Get info about a user
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        user (Optional[hk.User], optional): The user, defaults to the author
+    """
+
     if not (guild := ctx.get_guild()):
         await ctx.respond("This command may only be used in servers.")
         return
@@ -80,6 +88,12 @@ async def userinfo(ctx: lb.Context, user: Optional[hk.User] = None) -> None:
 @lb.command("serverinfo", "Get general info about the server", aliases=["server"])
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def serverinfo(ctx: lb.Context) -> None:
+    """Get information about the current server
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+    """
+
     if not (guild := ctx.get_guild()):
         await ctx.respond("This command may only be used in servers.")
         return
@@ -110,6 +124,12 @@ async def serverinfo(ctx: lb.Context) -> None:
 @lb.command("botinfo", "Get general info about the server", aliases=["info"])
 @lb.implements(lb.PrefixCommand)
 async def botinfo(ctx: lb.Context) -> None:
+    """Get info about the bot
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+    """
+
     user = info_plugin.bot.get_me()
     data = await info_plugin.bot.rest.fetch_application()
     # print(data.owner)
@@ -139,7 +159,7 @@ async def botinfo(ctx: lb.Context) -> None:
         .add_field("Name", user)
         .add_field("No of Servers", len(guilds), inline=True)
         .add_field("No of Members", member, inline=True)
-        .add_field("Version", "v0.2.1")
+        .add_field("Version", "v0.2.2")
         .add_field(
             "Alive since", f"<t:{int(user.created_at.timestamp())}:R>", inline=True
         )
@@ -213,6 +233,13 @@ async def botinfo(ctx: lb.Context) -> None:
 @lb.command("roleinfo", "Get info on a role", pass_options=True, aliases=["role"])
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def role_info(ctx: lb.Context, role: hk.Role) -> None:
+    """Generate infor about a role
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        role (hk.Role): The role to get info about
+    """
+
     if not (guild := ctx.get_guild()):
         await ctx.respond("This command may only be used in servers.")
         return
@@ -254,6 +281,13 @@ async def role_info(ctx: lb.Context, role: hk.Role) -> None:
 )
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def emoji_info(ctx: lb.Context, emoji: hk.Emoji) -> None:
+    """Get info about a server emote
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        emoji (hk.Emoji): The emote to get info about
+    """
+
     if not (guild := ctx.get_guild()):
         await ctx.respond("This command may only be used in servers.")
         return
@@ -279,8 +313,10 @@ async def emoji_info(ctx: lb.Context, emoji: hk.Emoji) -> None:
 
 
 def load(bot: lb.BotApp) -> None:
+    """Load the plugin"""
     bot.add_plugin(info_plugin)
 
 
 def unload(bot: lb.BotApp) -> None:
+    """Unload the plugin"""
     bot.remove_plugin(info_plugin)

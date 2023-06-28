@@ -1,9 +1,10 @@
 """
 This is the module to make 3x3s or find Google Image results
 """
+import io
 import re
 import json
-import requests
+
 from bs4 import BeautifulSoup
 from PIL import Image
 
@@ -16,13 +17,11 @@ from extPlugins.misc import CustomPrevButton, CustomNextButton
 
 gallery_plugin = lb.Plugin("Gallery", "Get a gallery or a collage of images")
 
-# TODO
-# 1. Button Styles, make them look less bad✅
-# 2. 3x3 ✅
-
 
 def original_images(soup):
-    googleImages = []
+    """Return the original res images from the scrapped ones"""
+
+    google_images = []
 
     all_script_tags = soup.select("script")
 
@@ -70,10 +69,11 @@ def original_images(soup):
     ]
     # print("Parsing shit")
     # print(full_res_images[0:2])
-    for index, (metadata, thumbnail, original) in enumerate(
-        zip(soup.select(".isv-r.PNCib.MSM1fd.BUooTd"), thumbnails, full_res_images),
-        start=1,
+    for metadata, thumbnail, original in zip(
+        soup.select(".isv-r.PNCib.MSM1fd.BUooTd"), thumbnails, full_res_images
     ):
+        # start=1,
+        # ):
         try:
             google_images.append(
                 {
@@ -88,7 +88,7 @@ def original_images(soup):
                     "original": original,
                 }
             )
-        except Exception as e:
+        except Exception:
             print("Google is shit")
             google_images.append(
                 {
@@ -103,9 +103,20 @@ def original_images(soup):
     return google_images
 
 
-async def lookfor(query: str, num: int = 9):
+async def lookfor(query: str, num: int = 9) -> list:
+    """Return images and corresponding data of the search query
+
+    Args:
+        query (str): The query to search for
+        num (int, optional): The number of images to search for. Defaults to 9.
+
+    Returns:
+        list: The list of images alongwith thumbnail, source and link if possible
+    """
+
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
+            AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
     }
     params = {
         "q": query,  # Query to search for
@@ -125,6 +136,8 @@ async def lookfor(query: str, num: int = 9):
 
 
 class MyNavButton(nav.NavButton):
+    """Click to navigate button class"""
+
     async def callback(self, ctx: miru.ViewContext) -> None:
         await ctx.respond("Clicked", flags=hk.MessageFlag.EPHEMERAL)
 
@@ -145,6 +158,12 @@ class MyNavButton(nav.NavButton):
 @lb.command("gallery", "Generate a gallery of a particular item", aliases=["gi", "s"])
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def gallery(ctx: lb.Context) -> None:
+    """Returns a gallery of images of the query
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+    """
+
     pages = []
     query = ctx.options["query"]
 
@@ -167,6 +186,12 @@ async def gallery(ctx: lb.Context) -> None:
 @lb.command("Generate Image Gallery", "Find images of the target")
 @lb.implements(lb.MessageCommand)
 async def img_gallery_menu(ctx: lb.MessageContext):
+    """Returns a gallery of images of the query (menu command impl)
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+    """
+
     pages = []
     query = ctx.options["target"].content
 
@@ -199,6 +224,15 @@ async def img_gallery_menu(ctx: lb.MessageContext):
 )
 @lb.implements(lb.PrefixCommand)
 async def collage(ctx: lb.Context, values: str) -> None:
+    """Generate a 3x3 of the requested values
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        values (str): The 9 values seperated by commas
+        (put add= something in the end to filter the queries better)
+        Eg. 3x3 rose, sunflower add=flower
+    """
+
     temp = values.split("add=")
     if len(temp) == 2:
         values, add = temp
@@ -206,7 +240,6 @@ async def collage(ctx: lb.Context, values: str) -> None:
         add = ""
     values = values.split(",")
     images = []
-    import io
 
     for value in values:
         async with ctx.bot.d.aio_session.get(
@@ -221,15 +254,15 @@ async def collage(ctx: lb.Context, values: str) -> None:
             await ctx.respond("Too many arguments")
             return
 
-        x = (i % 3) * 300
-        y = int(i / 3) * 300
+        x_pos = (i % 3) * 300
+        y_pos = int(i / 3) * 300
 
         width, height = img.size
         img = img.crop(
             (0, 0, width, width) if height > width else (0, 0, height, height)
         ).resize((300, 300))
 
-        _3x3.paste(img, (x, y))
+        _3x3.paste(img, (x_pos, y_pos))
 
     _3x3.save(f"pictures/3x3{ctx.author.username}.png")
     await ctx.respond(
@@ -239,20 +272,22 @@ async def collage(ctx: lb.Context, values: str) -> None:
     )
 
 
-@gallery.set_error_handler
-async def gallery_errors_handler(event: lb.CommandErrorEvent) -> bool:
-    # exception = event.exception.__cause__ or event.exception
+# @gallery.set_error_handler
+# async def gallery_errors_handler(event: lb.CommandErrorEvent) -> bool:
+#     # exception = event.exception.__cause__ or event.exception
 
-    # if isinstance(exception, lb.MissingRequiredPermission):
-    #     await event.context.respond("You're missing some perms there, bub.")
-    #     return True
+#     # if isinstance(exception, lb.MissingRequiredPermission):
+#     #     await event.context.respond("You're missing some perms there, bub.")
+#     #     return True
 
-    return False
+#     return False
 
 
 def load(bot: lb.BotApp) -> None:
+    """Load the plugin"""
     bot.add_plugin(gallery_plugin)
 
 
 def unload(bot: lb.BotApp) -> None:
+    """Unload the plugin"""
     bot.remove_plugin(gallery_plugin)

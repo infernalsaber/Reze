@@ -1,3 +1,4 @@
+"""The extension of the plugin to download a youtube video's audio"""
 from yt_dlp import YoutubeDL
 
 
@@ -11,8 +12,9 @@ def length_filter(info, *, incomplete):
         return "Invalid file duration"
 
 
-def my_hook(d):
-    if d["status"] == "finished":
+def my_hook(download):
+    """Status of the downloading process"""
+    if download["status"] == "finished":
         print("\nDone downloading, now converting ...\n")
 
 
@@ -21,10 +23,11 @@ def my_hook(d):
 #         print('\nDone converting and embedding, now playing ...\n')
 
 
-async def downloadVideo(url: str, duration: int = None) -> int | str:
+async def download_video(url: str, duration: int = None) -> int | str:
+    """Download the video"""
     # print("Duration is", duration)
 
-    if duration and duration > 270 and duration < 450:  # UNCOMMENT THIS
+    if duration and 270 < duration < 450:  # UNCOMMENT THIS
         bitrate = 128
     elif duration and duration > 450:
         bitrate = 108
@@ -46,18 +49,17 @@ async def downloadVideo(url: str, duration: int = None) -> int | str:
         # 'skip_download': True, # MAKE NOTICE OF THIS
         "progress_hooks": [my_hook],
         # 'postprocessor_hooks': [hook2],
-        "outtmpl": "./videos/%(title)s.%(ext)s"
-        # ,
-        # 'postprocessors': [
-        # {  # Extract audio using ffmpeg
-        #     'key': 'FFmpegExtractAudio',
-        #     'preferredcodec': 'mp3',
-        #     'preferredquality': bitrate,
-        # },
-        # { #Embedding thumbnail using ffmpeg and AtomicParsley
-        #     'key': 'EmbedThumbnail',
-        # },
-        # ]
+        "outtmpl": "./videos/%(title)s.%(ext)s",
+        "postprocessors": [
+            {  # Extract audio using ffmpeg
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": "mp3",
+                "preferredquality": bitrate,
+            },
+            {  # Embedding thumbnail using ffmpeg and AtomicParsley
+                "key": "EmbedThumbnail",
+            },
+        ],
     }
 
     with YoutubeDL(ydl_opts) as ydl:

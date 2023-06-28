@@ -1,3 +1,4 @@
+"""Make cool plot charts"""
 import io
 from PIL import Image
 
@@ -9,7 +10,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.io as pio
 
-from extPlugins.plot_curves2 import searchIt
+from extPlugins.plot_curves2 import search_it
 
 
 plot_plugin = lb.Plugin(
@@ -23,7 +24,7 @@ plot_plugin = lb.Plugin(
 @lb.command("plot", "Make a series' trends' graph when it aired", aliases=["p"])
 @lb.implements(lb.PrefixCommandGroup, lb.SlashCommandGroup)
 async def plt_grp(ctx: lb.Context) -> None:
-    pass
+    """Base ftn to plot a graph"""
 
 
 @plt_grp.child
@@ -41,7 +42,13 @@ async def plt_grp(ctx: lb.Context) -> None:
 )
 @lb.implements(lb.PrefixSubCommand, lb.SlashSubCommand)
 async def plot_airing_trend(ctx: lb.Context, series: str) -> None:
-    data = await searchIt(series)
+    """Plot the popularity of an anime when it aired
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        series (str): Name of the series
+    """
+    data = await search_it(series)
 
     if isinstance(data, int):
         await ctx.respond(f"An error occurred, `code: {data}` ")
@@ -106,15 +113,22 @@ async def plot_airing_trend(ctx: lb.Context, series: str) -> None:
 )
 @lb.implements(lb.PrefixSubCommand, lb.SlashSubCommand)
 async def compare_trends(ctx: lb.Context, query: str) -> None:
+    """Compare the popularity and ratings of two different anime
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        query (str): The name of the two anime (seperated by "vs")
+    """
+
     series = query.split("vs")
-    if not len(series) == 2:
+    if not len(series) != 2:
         await ctx.respond("Only 2 allowed rn")
         return
 
     async with ctx.bot.rest.trigger_typing(ctx.event.channel_id):
-        data = await searchIt(series[0])
+        data = await search_it(series[0])
         # from pprint import pprint
-        data2 = await searchIt(series[1])
+        data2 = await search_it(series[1])
 
         # await ctx.respond(f"{data, data2}")
 
@@ -219,14 +233,16 @@ async def compare_trends(ctx: lb.Context, query: str) -> None:
 # @lb.command("joke", "Fetch some joks")
 # @lb.implements(lb.PrefixSubCommand, lb.SlashSubCommand)
 # async def joke_reddit(ctx: lb.Context) ->None:
-#     #TODO
+#
 #     #Fetch memes from r/jokes or r/dadjokes (consider adding comments too?)
 #     ...
 
 
 def load(bot: lb.BotApp) -> None:
+    """Load the plugin"""
     bot.add_plugin(plot_plugin)
 
 
 def unload(bot: lb.BotApp) -> None:
+    """Unload the plugin"""
     bot.remove_plugin(plot_plugin)

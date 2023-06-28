@@ -1,10 +1,11 @@
-from extPlugins.misc import GenericButton, KillButton
+"""Access directory items"""
 import os
 
 import lightbulb as lb
 import hikari as hk
 import miru
 
+from extPlugins.misc import GenericButton, KillButton
 
 dir_plugin = lb.Plugin("Directory", "Access the bot's storage directory")
 
@@ -15,6 +16,12 @@ dir_plugin = lb.Plugin("Directory", "Access the bot's storage directory")
 @lb.command("dir", "Upload media files from the cwd", pass_options=True)
 @lb.implements(lb.PrefixCommand)
 async def directory(ctx: lb.Context) -> None:
+    """Get media files from the directory, this to be used is if a command fails
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+    """
+
     if not (guild := ctx.get_guild()):
         await ctx.respond("This command may only be used in servers.")
         return
@@ -71,8 +78,10 @@ async def directory(ctx: lb.Context) -> None:
 
 
 def load(bot: lb.BotApp) -> None:
+    """Load the plugin"""
     bot.add_plugin(dir_plugin)
 
 
 def unload(bot: lb.BotApp) -> None:
+    """Unload the plugin"""
     bot.remove_plugin(dir_plugin)

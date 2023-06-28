@@ -1,13 +1,16 @@
+"""Module to do Image Transformations and Apply Effects"""
 import io
 import os
 from typing import Optional, Sequence
+import random
+
 from PIL import Image, ImageDraw, ImageOps, ImageFont
+import dotenv
 import fast_colorthief
 
 import hikari as hk
 import lightbulb as lb
 
-import dotenv
 from extPlugins.misc import is_image
 
 
@@ -15,7 +18,6 @@ dotenv.load_dotenv()
 
 REMOVE_BG_KEY = os.environ["removeBG_key"]
 
-import random
 
 image_plugin = lb.Plugin("Image Tools", "Apply cool and useful effects to images")
 
@@ -33,6 +35,16 @@ image_plugin = lb.Plugin("Image Tools", "Apply cool and useful effects to images
 async def color_palette(
     dominant_color: tuple, palette_colors: Sequence[tuple]
 ) -> Image.Image:
+    """Generate the pillow object with the template style applied to it
+
+    Args:
+        dominant_color (tuple): The dominant colour of the original image
+        palette_colors (Sequence[tuple]): The top 5 most visually present colours of the image
+
+    Returns:
+        Image.Image: Cool pillow object with the template and stuff
+    """
+
     img_font = ImageFont.truetype("resources/fonts/TTNorms-Light.otf", size=30)
     mask = Image.new("RGBA", (960, 722), (0, 0, 0, 0))
     draw = ImageDraw.Draw(mask)
@@ -100,26 +112,30 @@ async def color_palette(
 @lb.command("imgtools", "Modify an image")
 @lb.implements(lb.SlashCommandGroup)
 async def image_group(ctx: lb.Context) -> None:
-    pass
-
-
-@image_group.child()
-@lb.option("effect", "effect to apply", choices=["Blur", "Warp"])
-@lb.option(
-    "image",
-    "image to modify",
-    hk.Attachment,
-)
-@lb.command("from-attachment", "Upload locally stored images for processing")
-@lb.implements(lb.SlashSubCommand)
-async def from_attachment(ctx: lb.Context, image: hk.Attachment, effect: str) -> None:
-    """A function that applies a filter from the given ones to an image and returns it
+    """Apply modifications to an image
 
     Args:
-        ctx (lb.Context): The message context
-        image (hk.Attachment): The image attachment
-        effect (Sequence[str]): The effect that is to be applied on the input image
+        ctx (lb.Context): The event context (irrelevant to the user)
     """
+
+
+# @image_group.child()
+# @lb.option("effect", "effect to apply", choices=["Blur", "Warp"])
+# @lb.option(
+#     "image",
+#     "image to modify",
+#     hk.Attachment,
+# )
+# @lb.command("from-attachment", "Upload locally stored images for processing")
+# @lb.implements(lb.SlashSubCommand)
+# async def from_attachment(ctx: lb.Context, image: hk.Attachment, effect: str) -> None:
+#     """A function that applies a filter from the given ones to an image and returns it
+
+#     Args:
+#         ctx (lb.Context): The message context
+#         image (hk.Attachment): The image attachment
+#         effect (Sequence[str]): The effect that is to be applied on the input image
+#     """
 
 
 @image_group.child()
@@ -134,6 +150,14 @@ async def from_attachment(ctx: lb.Context, image: hk.Attachment, effect: str) ->
 )
 @lb.implements(lb.SlashSubCommand)
 async def from_link(ctx: lb.Context, image: Optional[str], effect: str) -> None:
+    """A function that applies a filter from the given ones to an image and returns it
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        image (str): The image link. Defaults to the user's pfp
+        effect (str): The effect that is to be applied on the input image
+    """
+
     if not image:
         image = ctx.author.avatar_url.url
 
@@ -224,8 +248,8 @@ async def from_link(ctx: lb.Context, image: Optional[str], effect: str) -> None:
         # img.paste(Image.new("RGB", (310,310), color=0x00FFFF).putalpha(175), (80,181,390,491))
         image = ImageOps.contain(image, (300, 300))
         image = ImageOps.expand(image, border=5, fill=(0, 255, 255))
-        x, y = image.size
-        img.paste(image, (82, 183, 82 + x, 183 + y))
+        x_len, y_len = image.size
+        img.paste(image, (82, 183, 82 + x_len, 183 + y_len))
         num = random.randint(1, 400)
         img.save(f"pictures/visual/{num}.png")
         await ctx.edit_last_response(
@@ -249,17 +273,29 @@ async def from_link(ctx: lb.Context, image: Optional[str], effect: str) -> None:
 async def color_visualize(
     hex_code: str, info_text: str = None, html_color: str = None
 ) -> Image.Image:
+    """The function to apply the template of the colour visualize effect
+
+    Args:
+        hex_code (str): The hex code of the query colour
+        info_text (str, optional): The text which contains info about the colour, defaults to None.
+        html_color (str, optional): Closest HTML5 colour to the given colour, defaults to None.
+
+    Returns:
+        Image.Image: The cool pillow object with the template and stuff
+    """
+
     img_font = ImageFont.truetype("resources/fonts/TTNorms-Medium.otf", size=30)
 
     mask = Image.new("RGBA", (960, 722), (0, 0, 0, 0))
     draw = ImageDraw.Draw(mask)
-    draw.polygon([(0, 0), (0, 722), (357, 722), (117, 0)], fill=hexCode)
+    draw.polygon([(0, 0), (0, 722), (357, 722), (117, 0)], fill=hex_code)
     draw.text((440, 270), info_text, fill=(255, 255, 255), font=img_font)
     draw.text((480, 640), html_color, fill=(255, 255, 255), font=img_font)
 
     img = Image.open(
         f"resources/visualize/{random.choice(os.listdir('resources/visualize'))}"
     ).convert("RGBA")
+
     return Image.composite(mask, img, mask)
 
 
@@ -278,13 +314,20 @@ async def color_visualize(
 )
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def visualize(ctx: lb.Context, color: hk.Color) -> None:
+    """Visualize a colour and get some info related to it
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        color (hk.Color): The colour of the image (hex, RGB etc.)
+    """
+
     if isinstance(ctx, lb.SlashContext):
         color = hk.Color.of(color)
     if f"{color.hex_code}.png" in os.listdir("pictures/visual/"):
         await ctx.respond(attachment=f"pictures/visual/{color.hex_code}.png")
         return
 
-    # TODO remove the typing for slash command
+    # TD remove the typing for slash command
     async with ctx.bot.rest.trigger_typing(ctx.event.channel_id):
         async with ctx.bot.d.aio_session.get(
             "https://www.thecolorapi.com/id", params={"hex": color.raw_hex_code}
@@ -302,7 +345,6 @@ async def visualize(ctx: lb.Context, color: hk.Color) -> None:
 
 
 @image_plugin.command
-@lb.option("num", "The number of colors", int, required=False)
 @lb.option(
     "image", "The image whose palette is to be generated", hk.Attachment, required=False
 )
@@ -310,18 +352,24 @@ async def visualize(ctx: lb.Context, color: hk.Color) -> None:
     "palette", "Get the colour palette of an image", aliases=["cp"], pass_options=True
 )
 @lb.implements(lb.PrefixCommand)
-async def palette(
-    ctx: lb.Context, image: hk.Attachment = None, num: int = None
-) -> None:
+async def palette(ctx: lb.Context, image: hk.Attachment = None) -> None:
+    """Generate colour palette of the dominant colours of a given image
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        image (hk.Attachment, optional): The image whose palette is to be generated,
+        defaults to user's pfp
+    """
+
     if not image:
         image = ctx.author.avatar_url
 
     image = io.BytesIO(await image.read())
 
-    if num == 1:
-        await ctx.respond(fast_colorthief.get_dominant_color(image, 1))
-    else:
-        pass
+    # if num == 1:
+    #     await ctx.respond(fast_colorthief.get_dominant_color(image, 1))
+    # else:
+    #     pass
 
     async with ctx.bot.rest.trigger_typing(ctx.event.channel_id):
         img = await color_palette(
@@ -333,16 +381,18 @@ async def palette(
         # img.paste(Image.new("RGB", (310,310), color=0x00FFFF).putalpha(175), (80,181,390,491))
         image = ImageOps.contain(image, (300, 300))
         image = ImageOps.expand(image, border=5, fill=(0, 255, 255))
-        x, y = image.size
-        img.paste(image, (82, 183, 82 + x, 183 + y))
+        x_len, y_len = image.size
+        img.paste(image, (82, 183, 82 + x_len, 183 + y_len))
         num = random.randint(1, 999)
         img.save(f"pictures/visual/{num}.png")
         await ctx.respond(attachment=f"pictures/visual/{num}.png")
 
 
 def load(bot: lb.BotApp) -> None:
+    """Load the plugin"""
     bot.add_plugin(image_plugin)
 
 
 def unload(bot: lb.BotApp) -> None:
+    """Unload the plugin"""
     bot.remove_plugin(image_plugin)

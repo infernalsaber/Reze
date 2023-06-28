@@ -1,6 +1,7 @@
+"""The animanga related plugin"""
 import re
-import requests
 from datetime import datetime
+import requests
 
 
 import lightbulb as lb
@@ -10,10 +11,10 @@ from miru.ext import nav
 
 
 from extensions.dir import GenericButton
-from extPlugins.misc import requestsFailedError
+from extPlugins.misc import RequestsFailedError
 
 
-# TODO
+# TDL
 # 1. Change the resolution of images gotten for preview (check: shorturl.at/qwHV6)✅
 # 2. Make it refer to the original message (info embed)🌊
 # 3. Custom navigator buttons (inc. kill button) 〰
@@ -27,6 +28,7 @@ pattern = re.compile(r"\b(https?:\/\/)?(www.)?anilist.co\/(anime|manga)\/(\d{1,6
 
 
 async def get_imp_info(chapters):
+    """Parse the chapter info and return the required parts"""
     volume_last = list(chapters["volumes"].keys())[0]
     chapter_last = list(chapters["volumes"][volume_last]["chapters"].keys())[0]
     id_last = chapters["volumes"][volume_last]["chapters"][chapter_last]["id"]
@@ -46,6 +48,7 @@ async def get_imp_info(chapters):
 
 @al_listener.listener(hk.GuildMessageCreateEvent)
 async def al_link_finder(event: hk.GuildMessageCreateEvent) -> None:
+    """Check if a message contains an animanga link and display it's info"""
     if event.is_bot:
         return
     # print(event.message.content)
@@ -96,6 +99,7 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
             response = requests.post(
                 "https://graphql.anilist.co",
                 json={"query": query, "variables": variables},
+                timeout=10,
             )
             if response.status_code != 200:
                 print(response.json())
@@ -162,6 +166,8 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
 )
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def al_search(ctx: lb.Context, type: str, media: str) -> None:
+    """Search an anime/manga/character on AL"""
+
     query = """
 query ($id: Int, $search: String, $type: MediaType) { # Define which variables will be used (id)
   Media (id: $id, search: $search, type: $type, sort: POPULARITY_DESC) { # Add variables to query (id) (type: ANIME is hard-coded)
@@ -208,7 +214,9 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
     variables = {"search": media, "type": type}
 
     response = requests.post(
-        "https://graphql.anilist.co", json={"query": query, "variables": variables}
+        "https://graphql.anilist.co",
+        json={"query": query, "variables": variables},
+        timeout=10,
     )
     if response.status_code != 200:
         print(response.json())
@@ -258,7 +266,7 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
         )
         return
 
-    elif type == "character":
+    if type == "character":
         await search_character(ctx, media)
         return
 
@@ -266,25 +274,29 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
     print("\n\nUsing MD\n\n")
     base_url = "https://api.mangadex.org"
 
-    r = requests.get(f"{base_url}/manga", params={"title": title})
+    req = requests.get(f"{base_url}/manga", params={"title": title}, timeout=10)
 
-    manga_id = r.json()["data"][0]["id"]
+    manga_id = req.json()["data"][0]["id"]
 
     # print(f"The link to the manga is: https://mangadex.org/title/{manga_id}")
 
     languages = ["en"]
 
-    r = requests.get(
+    req = requests.get(
         f"{base_url}/manga/{manga_id}/aggregate",
         params={"translatedLanguage[]": languages},
+        timeout=10,
     )
     # print(r.status_code)
     # print(r.json())
     # print([chapter["id"] for chapter in r.json()["data"]])
-    data = await get_imp_info(r.json())
+    data = await get_imp_info(req.json())
 
     if no_of_items == "NA":
-        no_of_items = f"[{data['latest']['chapter'].split('.')[0]}](https://cubari.moe/read/mangadex/{manga_id})"
+        no_of_items = (
+            f"[{data['latest']['chapter'].split('.')[0]}]("
+            f"https://cubari.moe/read/mangadex/{manga_id})"
+        )
     else:
         no_of_items = f"[{no_of_items}](https://cubari.moe/read/mangadex/{manga_id})"
 
@@ -322,7 +334,7 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
     # return
     await view.start(preview)
     await view.wait()
-    msg = ctx.previous_response.message
+    # msg = ctx.previous_response.message
     # al_listener.bot.rest.create_message(channel)
     if hasattr(view, "answer"):
         await ctx.respond(
@@ -334,13 +346,11 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
         await ctx.edit_last_response(components=[])
         return
 
-    data["first"]["id"]
+    req = requests.get(f"{base_url}/at-home/server/{data['first']['id']}", timeout=10)
+    if not req.ok:
+        raise RequestsFailedError
 
-    r = requests.get(f"{base_url}/at-home/server/{data['first']['id']}")
-    if not r.ok:
-        raise requestsFailedError
-        return
-    r_json = r.json()
+    r_json = req.json()
     pages = []
     # req = requests.Session()
     # try:
@@ -348,19 +358,23 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
     # os.makedirs(f"./manga/{data['first']['id']}")
     # from pprint import pprint
     # pprint(r_json)
-    for i, page in enumerate(r_json["chapter"]["data"]):
+    for page in r_json["chapter"]["data"]:
         # print(f"\n\n{r_json['baseUrl']}/data/{r_json['chapter']['hash']}/{page}\n\n")
         # pageResp = req.get(f"{r_json['baseUrl']}/data/{r_json['chapter']['hash']}/{page}")
 
         # if pageResp.ok:
         # img = Image.open(io.BytesIO(pageResp.content))
-        # img.resize(tuple(int(0.90*i) for i in img.size), Image.LANCZOS).save(f"./manga/{data['first']['id']}/pilsave_qty95_size90.png", quality=95, optimize=True)
+        # img.resize(tuple(int(0.90*i) for i in img.size), Image.LANCZOS).save(f"./manga/
+        # {data['first']['id']}/pilsave_qty95_size90.png", quality=95, optimize=True)
         # with open(f"./manga/{data['first']['id']}/io.png", mode="wb") as f:
         #     f.write(pageResp.content)
-        # Image.open(io.BytesIO(pageResp.content)).save(f"./manga/{data['first']['id']}/pilsave.png")
-        # Image.open(io.BytesIO(pageResp.content)).convert("RGB").save(f"./manga/{data['first']['id']}/{i}.jpg")
+        # Image.open(io.BytesIO(pageResp.content)).save(f"./manga/
+        # {data['first']['id']}/pilsave.png")
+        # Image.open(io.BytesIO(pageResp.content)).convert("RGB").save(f"./
+        # manga/{data['first']['id']}/{i}.jpg")
         # img = Image.open(io.BytesIO(pageResp.content))
-        # img.resize(tuple(int(0.60*i) for i in img.size), Image.LANCZOS).save(f"./manga/{data['first']['id']}/pilsave_qty90_size75.png", quality=75, optimize=True)
+        # img.resize(tuple(int(0.60*i) for i in img.size), Image.LANCZOS).save(f"./manga/
+        # {data['first']['id']}/pilsave_qty90_size75.png", quality=75, optimize=True)
         # return
         # else:
         #     print(pageResp.content)
@@ -374,8 +388,10 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
 
         # asyncio.sleep(3)
         # for item in sorted(os.listdir(f"./manga/{data['first']['id']}")):
-        # await ctx.respond(embed=hk.Embed().set_image(f"./manga/{data['first']['id']}/{item}")) WORKS, but meh
-        # await ctx.respond(embed=hk.Embed(description="dash"), attachment=f"./manga/{data['first']['id']}/{item}") IT WORKS but no navi
+        # await ctx.respond(embed=hk.Embed().set_image(f"./manga/
+        # {data['first']['id']}/{item}")) WORKS, but meh
+        # await ctx.respond(embed=hk.Embed(description="dash"), attachment=f"./
+        # manga/{data['first']['id']}/{item}") IT WORKS but no navi
         pages.append(
             hk.Embed(title=title, color=0xFF6740)
             .set_image(f"{r_json['baseUrl']}/data/{r_json['chapter']['hash']}/{page}")
@@ -414,7 +430,8 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
 
 
 async def search_animanga(ctx: lb.Context, type: str, media: str):
-    t1 = datetime.now().timestamp()
+    """Search an animanga on AL"""
+    # timenow = datetime.now().timestamp()
 
     query = """
 query ($id: Int, $search: String, $type: MediaType) { # Define which variables will be used (id)
@@ -504,20 +521,23 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
     print("\n\nUsing MD\n\n")
     base_url = "https://api.mangadex.org"
 
-    r = await ctx.bot.d.aio_session.get(f"{base_url}/manga", params={"title": title})
-    r = await r.json()
+    req = await ctx.bot.d.aio_session.get(f"{base_url}/manga", params={"title": title})
+    req = await req.json()
 
-    manga_id = r["data"][0]["id"]
+    manga_id = req["data"][0]["id"]
     languages = ["en"]
-    r = await ctx.bot.d.aio_session.get(
+    req = await ctx.bot.d.aio_session.get(
         f"{base_url}/manga/{manga_id}/aggregate",
         params={"translatedLanguage[]": languages},
     )
 
-    data = await get_imp_info(await r.json())
+    data = await get_imp_info(await req.json())
 
     if no_of_items == "NA":
-        no_of_items = f"[{data['latest']['chapter'].split('.')[0]}](https://cubari.moe/read/mangadex/{manga_id})"
+        no_of_items = (
+            f"[{data['latest']['chapter'].split('.')[0]}]("
+            f"https://cubari.moe/read/mangadex/{manga_id})"
+        )
     else:
         no_of_items = f"[{no_of_items}](https://cubari.moe/read/mangadex/{manga_id})"
 
@@ -552,7 +572,7 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
         ),
         components=view,
     )
-    print("\n\nTime is ", datetime.now().timestamp() - t1, "s\n\n")
+    # print("\n\nTime is ", datetime.now().timestamp() - t1, "s\n\n")
 
     await view.start(preview)
     await view.wait()
@@ -568,16 +588,14 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
         await ctx.edit_last_response(components=[])
         return
 
-    data["first"]["id"]
+    req = requests.get(f"{base_url}/at-home/server/{data['first']['id']}", timeout=10)
+    if not req.ok:
+        raise RequestsFailedError
 
-    r = requests.get(f"{base_url}/at-home/server/{data['first']['id']}")
-    if not r.ok:
-        raise requestsFailedError
-        return
-    r_json = r.json()
+    r_json = req.json()
     pages = []
 
-    for i, page in enumerate(r_json["chapter"]["data"]):
+    for page in r_json["chapter"]["data"]:
         pages.append(
             hk.Embed(title=title, color=0xFF6740)
             .set_image(f"{r_json['baseUrl']}/data/{r_json['chapter']['hash']}/{page}")
@@ -614,6 +632,8 @@ query ($id: Int, $search: String, $type: MediaType) { # Define which variables w
 @lb.command("Look up manga", "Search a manga")
 @lb.implements(lb.MessageCommand)
 async def mangamenu(ctx: lb.MessageContext):
+    """Search a manga on AL"""
+
     await search_animanga(ctx, "MANGA", ctx.options["target"].content)
 
 
@@ -621,6 +641,7 @@ async def mangamenu(ctx: lb.MessageContext):
 @lb.command("Look up anime", "Search an anime")
 @lb.implements(lb.MessageCommand)
 async def animemenu(ctx: lb.MessageContext):
+    """Search an anime on AL"""
     await search_animanga(ctx, "ANIME", ctx.options["target"].content)
 
 
@@ -629,6 +650,16 @@ async def animemenu(ctx: lb.MessageContext):
 @lb.command("top", "Find top anime on MAL", pass_options=True)
 @lb.implements(lb.PrefixCommand)
 async def topanime(ctx: lb.PrefixContext, filter: str = None):
+    """Find the top anime on AL
+
+    Args:
+        ctx (lb.PrefixContext): The event context (irrelevant to the user)
+        filter (str, optional): The search filter (top, airing, bypopularity)
+
+    Raises:
+        RequestsFailedError: Raised if the API call fails
+    """
+
     if filter and filter in ["airing", "upcoming", "bypopularity", "favorite"]:
         num = 10
     else:
@@ -636,7 +667,7 @@ async def topanime(ctx: lb.PrefixContext, filter: str = None):
         filter = "anime"
 
     async with ctx.bot.d.aio_session.get(
-        "https://api.jikan.moe/v4/top/anime", params=dict(limit=num, filter=filter)
+        "https://api.jikan.moe/v4/top/anime", params={"limit": num, "filter": filter}
     ) as res:
         if res.ok:
             res = await res.json()
@@ -657,15 +688,15 @@ async def topanime(ctx: lb.PrefixContext, filter: str = None):
 
             await ctx.respond(embed=embed)
         else:
-            raise requestsFailedError
-            return
+            raise RequestsFailedError
 
 
 @al_search.set_error_handler
 async def gallery_errors_handler(event: lb.CommandErrorEvent) -> bool:
+    """Exception handler"""
     exception = event.exception.__cause__ or event.exception
 
-    if isinstance(exception, requestFailedError):
+    if isinstance(exception, RequestsFailedError):
         await event.context.respond(
             "The application failed to fetch a response", flags=hk.MessageFlag.EPHEMERAL
         )
@@ -674,6 +705,7 @@ async def gallery_errors_handler(event: lb.CommandErrorEvent) -> bool:
 
 
 async def search_character(ctx: lb.Context, character: str):
+    """Search a character on AL"""
     query = """
 query ($id: Int, $search: String) { # Define which variables will be used in the query
   Character (id: $id, search: $search,  sort: FAVOURITES_DESC) { # Add var. to the query
@@ -782,12 +814,21 @@ query ($id: Int, $search: String) { # Define which variables will be used in the
 @lb.command("luc", "Search a chara", pass_options=True)
 @lb.implements(lb.PrefixCommand)
 async def chara(ctx: lb.PrefixContext, character: str):
+    """Search a character on AL
+
+    Args:
+        ctx (lb.PrefixContext): The event context (irrelevant to the user)
+        character (str): The character to search for
+    """
+
     await search_character(ctx, character)
 
 
 def load(bot: lb.BotApp) -> None:
+    """Load the plugin"""
     bot.add_plugin(al_listener)
 
 
 def unload(bot: lb.BotApp) -> None:
+    """Unload the plugin"""
     bot.remove_plugin(al_listener)

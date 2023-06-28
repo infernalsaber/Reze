@@ -1,3 +1,4 @@
+"""To make text or message logs"""
 import os
 
 import hikari as hk
@@ -9,6 +10,8 @@ logger = lb.Plugin("Log Commands", "Keeping a log of data, more to be added late
 
 @logger.listener(hk.StartingEvent)
 async def on_starting(event: hk.StartingEvent) -> None:
+    """Event fired on start of bot"""
+
     logger.bot.d.deleted_hook = await logger.bot.rest.create_webhook(
         channel=1032615074445135903, name="Reze #Deleted-Messages"
     )
@@ -19,12 +22,15 @@ async def on_starting(event: hk.StartingEvent) -> None:
 
 @logger.listener(hk.StoppingEvent)
 async def on_stopping(event: hk.StoppingEvent) -> None:
+    """Event fired on stopping the bot"""
+
     await logger.bot.rest.delete_webhook(logger.bot.d.deleted_hook)
     await logger.bot.rest.delete_webhook(logger.bot.d.updated_hook)
 
 
 @logger.listener(hk.GuildMessageDeleteEvent)
 async def delete_log(event: hk.GuildMessageDeleteEvent):
+    """Deleted message logger"""
     # limiting it to a particular guild for testing
     if event.guild_id != 997042589117194270:
         return
@@ -46,7 +52,7 @@ async def delete_log(event: hk.GuildMessageDeleteEvent):
     webhook = logger.bot.d.deleted_hook
     await webhook.execute(
         f"Message deleted by {author.mention} in {channel.mention}",
-        avatar_url=user.avatar_url,
+        avatar_url=author.avatar_url,
         embed=hk.Embed(
             description=content, color=old_message.author.accent_color
         ).set_author(name=author.username, icon=ava),
@@ -55,6 +61,7 @@ async def delete_log(event: hk.GuildMessageDeleteEvent):
 
 @logger.listener(hk.GuildMessageUpdateEvent)
 async def update_log(event: hk.GuildMessageUpdateEvent):
+    """Edited message logger"""
     # limiting it to a particular guild for testing
     if event.guild_id != 997042589117194270:
         return
@@ -71,7 +78,7 @@ async def update_log(event: hk.GuildMessageUpdateEvent):
     webhook = logger.bot.d.updated_hook
     await webhook.execute(
         f"Message updated by {author.mention} in {channel.mention}",
-        avatar_url=user.avatar_url,
+        avatar_url=author.avatar_url,
         embed=hk.Embed(
             description=content, color=old_message.author.accent_color
         ).set_author(name=author.username, icon=ava),
@@ -83,6 +90,8 @@ async def update_log(event: hk.GuildMessageUpdateEvent):
 @lb.command("logs", "Output the logs as a rar file", pass_options=True, aliases=["log"])
 @lb.implements(lb.PrefixCommand)
 async def logs_zip(ctx: lb.Context) -> None:
+    """Send the log file folder as a .rar file"""
+
     os.system("rar a logs.rar ./logs")
     await ctx.respond(attachment="logs.rar")
     os.remove("logs.rar")
@@ -93,12 +102,16 @@ async def logs_zip(ctx: lb.Context) -> None:
 @lb.command("loglast", "Output the latest log file", pass_options=True, aliases=["ll"])
 @lb.implements(lb.PrefixCommand)
 async def logs(ctx: lb.Context) -> None:
+    """Send the latest log text file"""
+
     await ctx.respond(attachment="./logs/log.txt")
 
 
 def load(bot: lb.BotApp) -> None:
+    """Load the plugin"""
     bot.add_plugin(logger)
 
 
 def unload(bot: lb.BotApp) -> None:
+    """Unload the plugin"""
     bot.remove_plugin(logger)
