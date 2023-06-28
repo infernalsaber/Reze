@@ -1,9 +1,12 @@
-import user_agent
+"""Fun, miscellaneous commands"""
 import os
 from datetime import datetime
-import requests
 import random
 import re
+
+import user_agent
+import requests
+import dotenv
 
 import hikari as hk
 import lightbulb as lb
@@ -11,8 +14,7 @@ import miru
 from miru.ext import nav
 
 
-import dotenv
-from extPlugins.misc import requestsFailedError
+from extPlugins.misc import RequestsFailedError
 from extPlugins.misc import CustomPrevButton, CustomNextButton
 
 
@@ -28,13 +30,23 @@ fun_plugin = lb.Plugin("Fun", "Misc. commands serving no real purpose")
 @lb.command("fun", "entertainment", aliases=["f"])
 @lb.implements(lb.PrefixCommandGroup, lb.SlashCommandGroup)
 async def fun_group(ctx: lb.Context) -> None:
-    pass
+    """Parent command for the fun group
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+    """
 
 
 @fun_group.child
 @lb.command("meme", "Fetch meme")
 @lb.implements(lb.PrefixSubCommand, lb.SlashSubCommand)
 async def meme_subcommand(ctx: lb.Context) -> None:
+    """Fetch a random meme
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+    """
+
     async with ctx.bot.d.aio_session.get("https://meme-api.com/gimme") as response:
         res = await response.json()
         if response.ok and res["nsfw"] is not True:
@@ -54,12 +66,14 @@ async def meme_subcommand(ctx: lb.Context) -> None:
             except:
                 code = 404
             await ctx.respond(
-                f"No meme was fetched 😖 `code: {response.status}`",
+                f"No meme was fetched 😖 `code: {code}`",
                 flags=hk.MessageFlag.EPHERMAL,
             )
 
 
 class AnimalView(miru.View):
+    """The view class for the animals command"""
+
     def __init__(self, author: hk.User) -> None:
         self.author = author
         super().__init__(timeout=60)
@@ -82,6 +96,7 @@ class AnimalView(miru.View):
         ],
     )
     async def select_menu(self, select: miru.TextSelect, ctx: miru.Context) -> None:
+        """Create the selection menu"""
         print(select)
         animal = select.values[0]
         async with ctx.bot.d.aio_session.get(
@@ -120,6 +135,12 @@ class AnimalView(miru.View):
 @lb.command("animal2", "get an animaru uwu")
 @lb.implements(lb.PrefixSubCommand, lb.SlashSubCommand)
 async def give_animal(ctx: lb.Context) -> None:
+    """Gives the user a cute image of the chosen animal
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+    """
+
     view = AnimalView(ctx.author)
     resp = await ctx.respond("Pick an animal", components=view.build())
     msg = await resp.message()
@@ -132,10 +153,16 @@ async def give_animal(ctx: lb.Context) -> None:
 @lb.command("joke", "Fetch some joks")
 @lb.implements(lb.PrefixSubCommand, lb.SlashSubCommand)
 async def joke_reddit(ctx: lb.Context) -> None:
+    """Gives a joke, quality not guaranteed though 😉
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+    """
+
     reddit = ctx.bot.d.reddit
     print(reddit.read_only)
-    subreddit = await reddit.subreddit("jokes+dadjokes")
-    submissions = subreddit.hot(limit=50)
+    sreddit = await reddit.subreddit("jokes+dadjokes")
+    submissions = sreddit.hot(limit=50)
     # sr, sr_img = submissions.name, submissions.icon_img
 
     flag = True
@@ -169,10 +196,17 @@ async def joke_reddit(ctx: lb.Context) -> None:
 @fun_plugin.command
 @lb.option("subreddit", "Name of the subreddit")
 @lb.command(
-    "subreddit", "Fetch a hot post from a subreddit", pass_options=True, aliases=["sr"]
+    "reddit", "Fetch a hot post from a subreddit", pass_options=True, aliases=["sr"]
 )
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def subreddit(ctx: lb.Context, subreddit: str) -> None:
+    """Fetch a random post from the selected subreddit
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        subreddit (str): The name of the subreddit eg. r/fun
+    """
+
     reddit = ctx.bot.d.reddit
     print(reddit.read_only)
     subreddit = await reddit.subreddit(subreddit)
@@ -219,6 +253,17 @@ async def subreddit(ctx: lb.Context, subreddit: str) -> None:
 )
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def danbooru(ctx: lb.Context, tags: str, number: int = None) -> None:
+    """Fetch an artwork from danbooru
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        tags (str): The tags to fetch for, eg. cat_girl+yuri
+        number (int, optional): The no of artworks to be fetched, 10 by default
+
+    Raises:
+        RequestsFailedError: When the request to the API fails
+    """
+
     url = "https://danbooru.donmai.us/"
     headers = {"User-Agent": user_agent.generate_user_agent()}
     if number and number > 30:
@@ -241,17 +286,20 @@ async def danbooru(ctx: lb.Context, tags: str, number: int = None) -> None:
         # response = requests.get(f"{url}/posts.json", params=dict(limit=number+5, tags=f"{tags}",
         # api_key=DB_KEY, login=DB_ID, page=page), headers=headers)
         response = requests.get(
-            f"{url}/posts.json?limit={number+5}&tags={tags}&api_key={DB_KEY}&login={DB_ID}&page={page} ",
+            (
+                f"{url}/posts.json?limit={number+5}&tags={tags}&api_key={DB_KEY}"
+                f"&login={DB_ID}&page={page} "
+            ),
             headers=headers,
             timeout=12,
         )
     if not response.ok:
         print(response.content)
-        raise requestsFailedError
+        raise RequestsFailedError
 
     pages = []
 
-    userName = re.compile(r"https?://twitter.com/(\w+)/status/\w+")
+    username = re.compile(r"https?://twitter.com/(\w+)/status/\w+")
     # from pprint import pprint
     # pprint(response.json())
     # print("\n\n", number, "\n\n")
@@ -259,10 +307,10 @@ async def danbooru(ctx: lb.Context, tags: str, number: int = None) -> None:
     for item in response.json():
         if item["pixiv_id"]:
             source = f"{item['pixiv_id']} on Pixiv"
-            icon = "https://w7.pngwing.com/pngs/952/504/png-transparent-pixiv-graphic-designer-illustrator-design-blue-text-logo.png"
-        elif userName.search(item["source"]):
-            source = f"{userName.search(item['source']).group(1)} on Twitter"
-            icon = "https://static.vecteezy.com/system/resources/previews/002/534/045/original/social-media-twitter-logo-blue-isolated-free-vector.jpg"
+            icon = "https://files.catbox.moe/zfqvm0.png"
+        elif username.search(item["source"]):
+            source = f"{username.search(item['source']).group(1)} on Twitter"
+            icon = "https://files.catbox.moe/biavwj.jpg"
         else:
             source = "Unknown"
             icon = None
@@ -286,8 +334,10 @@ async def danbooru(ctx: lb.Context, tags: str, number: int = None) -> None:
 
 
 def load(bot: lb.BotApp) -> None:
+    """Load the plugin"""
     bot.add_plugin(fun_plugin)
 
 
 def unload(bot: lb.BotApp) -> None:
+    """Unload the plugin"""
     bot.remove_plugin(fun_plugin)

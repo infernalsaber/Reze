@@ -1,3 +1,4 @@
+"""Plugin running the background tasks for the bot"""
 import os
 import glob
 import datetime
@@ -25,6 +26,7 @@ async def remind(ctx: lb.Context, task: str) -> None:
         ctx (lb.Context): Message Context
         task (str): The task to set reminder for
     """
+
     print(task.split("in"))
     task, time = task.split("in")
     time = time.strip()
@@ -40,16 +42,18 @@ async def remind(ctx: lb.Context, task: str) -> None:
 
 @tasks.task(d=7)
 async def clear_video_files():
-    print("Clearing Media Files")
+    """Clear video files"""
+    print("Clearing video Files")
     files = glob.glob("./videos/*")
-    for f in files:
-        os.remove(f)
+    for file in files:
+        os.remove(file)
     print("Cleared")
 
 
 @tasks.task(d=14)
 async def clear_pic_files():
-    print("Clearing Media Files")
+    """Clear image files"""
+    print("Clearing image Files")
     files = glob.glob("./pictures/*")
     for file in files:
         os.remove(file)
@@ -58,6 +62,7 @@ async def clear_pic_files():
 
 @tasks.task(d=30)
 async def update_yt_dlp():
+    """Update the yt-dlp plugin or it breaks"""
     os.system("yt-dlp -U")
     # Done to prevent the -ytdl and -yts commands from breaking
     print("Updated the package yt-dlp")
@@ -65,12 +70,15 @@ async def update_yt_dlp():
 
 @tasks.task(d=30)
 async def logs_date():
+    """Rotate logger"""
     os.rename("./logs/log.txt", f"./logs/{datetime.date.today()}.txt")
 
 
 def load(bot: lb.BotApp) -> None:
+    """Load the plugin"""
     bot.add_plugin(task_plugin)
 
 
 def unload(bot: lb.BotApp) -> None:
+    """Unload the plugin"""
     bot.remove_plugin(task_plugin)

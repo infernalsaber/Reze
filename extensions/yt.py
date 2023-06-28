@@ -1,3 +1,4 @@
+"""Search and/or download youtube videos"""
 import os
 import re
 import requests
@@ -12,7 +13,7 @@ import dotenv
 
 
 # Custom plugin
-from extPlugins.download_vid import downloadVideo
+from extPlugins.download_vid import download_video
 from extPlugins.misc import get_dominant_colour
 
 from extensions.dir import KillButton, GenericButton
@@ -29,25 +30,30 @@ YT_KEY = os.environ["yt_key"]
 
 
 class YTVideo:
-    def __init__(self, searchResults: dict, i: int) -> None:
-        self.vid_name: str = searchResults["items"][i]["snippet"]["title"]
-        self.vid_id: str = searchResults["items"][i]["id"]["videoId"]
-        self.vid_thumb: str = searchResults["items"][i]["snippet"]["thumbnails"][
+    """YouTube search video class"""
+
+    def __init__(self, search_results: dict, i: int) -> None:
+        """Initializing the class"""
+        self.vid_name: str = search_results["items"][i]["snippet"]["title"]
+        self.vid_id: str = search_results["items"][i]["id"]["videoId"]
+        self.vid_thumb: str = search_results["items"][i]["snippet"]["thumbnails"][
             "high"
         ][
             "url"
         ]  # make it medium later
-        self.vid_channel: str = searchResults["items"][i]["snippet"]["channelTitle"]
+        self.vid_channel: str = search_results["items"][i]["snippet"]["channelTitle"]
         self.vid_duration: str = ""
-        # pprint(searchResults["items"][i])
+        # pprint(search_results["items"][i])
 
     def get_link(self) -> str:
+        """Getting a link to the vid"""
         return f"https://www.youtube.com/watch?v={self.vid_id}"
 
     def set_duration(self, req) -> str:
+        """Make an API call and set the duration property"""
         ytapi2 = req.get(
             (
-                f"https://youtube.googleapis.com/youtube\/v3/videos?part=snippet%2Ccontent"
+                f"https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2Ccontent"
                 f"Details%2Cstatistics&id={self.vid_id}&regionCode=US&key={YT_KEY}"
             )
         )
@@ -63,6 +69,7 @@ class YTVideo:
         return self.vid_duration
 
     def get_duration_secs(self) -> int:
+        """Get the duration in seconds"""
         ytapi2 = requests.get(
             (
                 f"https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2Ccontent"
@@ -89,6 +96,8 @@ class YTVideo:
 
 
 class YesButton(miru.Button):
+    """Make a Yes Button class"""
+
     def __init__(self) -> None:
         # Initialize our button with some pre-defined properties
         super().__init__(style=hk.ButtonStyle.SUCCESS, label="Yes")
@@ -104,6 +113,8 @@ class YesButton(miru.Button):
 
 
 class NoButton(miru.Button):
+    """Make a no button class"""
+
     # Let's leave our arguments dynamic this time, instead of hard-coding them
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -139,6 +150,13 @@ yt_plugin = lb.Plugin("YouTube", "Search and get songs")
 )
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def youtube_search(ctx: lb.Context, query: str) -> None:
+    """Search youtube for a video query
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        query (str): The query to search for
+    """
+
     if not (guild := ctx.get_guild()):
         await ctx.respond("This command may only be used in servers.")
         return
@@ -159,6 +177,7 @@ async def youtube_search(ctx: lb.Context, query: str) -> None:
     if not response.ok:
         await ctx.respond(f"Error occurred 😵, code `{response.status_code}`")
         return
+
     embed = hk.Embed()
     lst_vids = []
     embed.set_footer(f"Requested by: {ctx.author}", icon=ctx.author.avatar_url)
@@ -169,8 +188,8 @@ async def youtube_search(ctx: lb.Context, query: str) -> None:
         embed.add_field(
             f"`{i+1}.`",
             (
-                f"```ansi\n\u001b[0;35m{q.vid_name} \u001b[0;36m"
-                f"[{q.vid_duration[2:] if q.vid_duration.startswith('0:') else q.vid_duration}] ```"
+                f"```ansi\n\u001b[0;35m{qvideo.vid_name} \u001b[0;36m"
+                f"[{qvideo.vid_duration[2:] if qvideo.vid_duration.startswith('0:') else qvideo.vid_duration}] ```"
             ),
         )
         lst_vids.append(qvideo)
@@ -189,6 +208,7 @@ async def youtube_search(ctx: lb.Context, query: str) -> None:
     else:
         await ctx.edit_last_response("Process timed out.", embeds=[], views=[])
         return
+
     vid_index = int(view.answer) - 1
     view2 = miru.View()
     view2.add_item(YesButton())
@@ -227,23 +247,24 @@ async def youtube_search(ctx: lb.Context, query: str) -> None:
         return
 
     if len(lst_vids[vid_index].vid_duration.split(":")) == 2:
-        netDuration = int(lst_vids[vid_index].vid_duration[0]) * 60 + int(
+        net_duration = int(lst_vids[vid_index].vid_duration[0]) * 60 + int(
             lst_vids[vid_index].vid_duration[1]
         )
-        if not netDuration < 60 or netDuration > 501:
-            print(netDuration)
+        if not net_duration < 60 or net_duration > 501:
+            print(net_duration)
             await ctx.respond("Invalid time duration.")
             return
     else:
         await ctx.respond("Invalid time duration.")
         return
 
-    # if lst_vids[vid_index].get_duration_secs() < 60 or lst_vids[vid_index].get_duration_secs() > 601:
+    # if lst_vids[vid_index].get_duration_secs() < 60 or
+    # lst_vids[vid_index].get_duration_secs() > 601:
     #     await ctx.respond("Invalid time duration.")
     #     return
-    b = await downloadVideo(lst_vids[vid_index].get_link())
-    if b:
-        await ctx.respond(b)
+    flag = await download_video(lst_vids[vid_index].get_link())
+    if flag:
+        await ctx.respond(flag)
     else:
         probable_name = (
             lst_vids[vid_index]
@@ -255,7 +276,7 @@ async def youtube_search(ctx: lb.Context, query: str) -> None:
         )
         await ctx.respond(
             content=f"{ctx.author.mention}, here's your MV",
-            attachment=f"videos/{probable_name}.m4a",
+            attachment=f"videos/{probable_name}.mp3",
             user_mentions=True,
         )
 
@@ -267,6 +288,13 @@ async def youtube_search(ctx: lb.Context, query: str) -> None:
 )
 @lb.implements(lb.PrefixCommand)
 async def youtube_download(ctx: lb.Context, video: str) -> None:
+    """Download a YouTube video from the link
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        video (str): The link to the video
+    """
+
     pattern = re.search(
         r"\b(https?://)?(www\.)?(m.)?(youtube\.com|/watch\?v=|youtu\.be/)(\w+)", video
     )
@@ -299,7 +327,7 @@ async def youtube_download(ctx: lb.Context, video: str) -> None:
         await yt_plugin.bot.rest.edit_message(
             ctx.channel_id, ctx.event.message, flags=hk.MessageFlag.SUPPRESS_EMBEDS
         )
-        await downloadVideo(video)
+        await download_video(video)
 
         probable_name = (
             resp["items"][0]["snippet"]["title"]
@@ -311,7 +339,7 @@ async def youtube_download(ctx: lb.Context, video: str) -> None:
         )
         await ctx.respond(
             content=f"{ctx.author.mention}, here's your MV",
-            attachment=f"videos/{probable_name}.m4a",
+            attachment=f"videos/{probable_name}.mp3",
             user_mentions=True,
         )
     else:
@@ -325,8 +353,10 @@ async def youtube_download(ctx: lb.Context, video: str) -> None:
 
 
 def load(bot: lb.BotApp) -> None:
+    """Load the plugin"""
     bot.add_plugin(yt_plugin)
 
 
 def unload(bot: lb.BotApp) -> None:
+    """Unload the plugin"""
     bot.remove_plugin(yt_plugin)

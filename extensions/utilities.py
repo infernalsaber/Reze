@@ -1,3 +1,4 @@
+"""Utility commands for the bot"""
 import hikari as hk
 import lightbulb as lb
 
@@ -15,6 +16,15 @@ util_plugin = lb.Plugin("Utility", "Commands intended to up the UX")
 @lb.command("makesticker", "Make a sticker", pass_options=True)
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def sticker_upload(ctx: lb.Context, name: str, tag: str, image: str) -> None:
+    """Make a sticker
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        name (str): Name of the sticker
+        tag (str): Tage for the sticker
+        image (str): Image for the sticker
+    """
+
     await ctx.respond(hk.ResponseType.DEFERRED_MESSAGE_CREATE)
     await util_plugin.bot.rest.create_sticker(ctx.get_guild(), name, tag, hk.URL(image))
     await ctx.respond("Uploaded sticker")
@@ -28,7 +38,14 @@ async def sticker_upload(ctx: lb.Context, name: str, tag: str, image: str) -> No
 )
 @lb.command("rememoji", "Remove an emoji", pass_options=True)
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
-async def sticker_upload(ctx: lb.Context, emoji: hk.Emoji) -> None:
+async def remove_emoji(ctx: lb.Context, emoji: hk.Emoji) -> None:
+    """Remove an emoji
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        emoji (hk.Emoji): The emoji to remove
+    """
+
     # await ctx.respond(hk.ResponseType.DEFERRED_MESSAGE_CREATE)
     print(emoji)
     await util_plugin.bot.rest.delete_emoji(ctx.get_guild(), emoji)
@@ -57,6 +74,17 @@ async def make_embed(
     link: str = None,
     thumbnail: str = None,
 ) -> None:
+    """Generate an embed message
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        content (str): The content of the embed
+        title (str, optional): Title of the embed. Defaults to None.
+        image (str, optional): Image to embed. Defaults to None.
+        footer (bool, optional): Whether to add a footer. Defaults to False.
+        link (str, optional): Link for the embed. Defaults to None.
+        thumbnail (str, optional): Url for the thumbnail. Defaults to None.
+    """
     embed = (
         hk.Embed(description=content, title=title, url=link)
         .set_image(image)
@@ -97,6 +125,17 @@ async def announce(
     role2: hk.Role = hk.undefined.UNDEFINED,
     image: str = None,
 ) -> None:
+    """Make an announcement using the bot
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        channel (hk.TextableGuildChannel): The channel to announce in
+        content (str): The content of the message
+        role (hk.Role, optional): Role 1 to ping. Defaults to None.
+        role2 (hk.Role, optional): If one Role ping wasn't enough. Defaults to hk.UNDEFINED.
+        image (str, optional): An image to embed (if any). Defaults to None.
+    """
+
     roles = []
     if role:
         roles.append(role.mention)
@@ -118,6 +157,7 @@ async def announce(
 @lb.command("echo", "Repeat")
 @lb.implements(lb.PrefixCommand)
 async def echo(ctx: lb.Context) -> None:
+    """Repeat the argument text"""
     await ctx.respond(
         ctx.options.text, user_mentions=True, role_mentions=True, mentions_everyone=True
     )
@@ -128,8 +168,10 @@ async def echo(ctx: lb.Context) -> None:
 @lb.option("code", "The plugin content", str, modifier=lb.OptionModifier.CONSUME_REST)
 @lb.command("addplugin", "Add a plugin", aliases=["ap"], pass_options=True)
 @lb.implements(lb.PrefixCommand)
-async def make_embed(ctx: lb.Context, code: str) -> None:
-    with open("extensions/new.py", "a+") as pyfile:
+async def add_plugin(ctx: lb.Context, code: str) -> None:
+    """Code directly from Discord (untested)"""
+
+    with open("extensions/new.py", "a+", encoding="utf-8") as pyfile:
         pyfile.write(code)
     ctx.bot.load_extensions("extensions.new")
     await ctx.respond("Done👍", delete_after=5)
@@ -139,13 +181,16 @@ async def make_embed(ctx: lb.Context, code: str) -> None:
 @lb.add_checks(lb.owner_only)
 @lb.command("backup", "Take a backup of the db")
 @lb.implements(lb.PrefixCommand)
-async def make_embed(ctx: lb.Context) -> None:
+async def backup(ctx: lb.Context) -> None:
+    """Send a backup of the DB"""
     await ctx.respond(attachment="botdb.db")
 
 
 def load(bot: lb.BotApp) -> None:
+    """Load the plugin"""
     bot.add_plugin(util_plugin)
 
 
 def unload(bot: lb.BotApp) -> None:
+    """Unload the plugin"""
     bot.remove_plugin(util_plugin)

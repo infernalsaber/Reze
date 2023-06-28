@@ -1,3 +1,4 @@
+"""Message pinner"""
 import hikari as hk
 import lightbulb as lb
 
@@ -6,6 +7,8 @@ pin_board = lb.Plugin("Pins", "Pin messages with >x 📌 reactions (wannabe star
 
 @pin_board.listener(hk.GuildReactionAddEvent)
 async def pin_lol(event: hk.GuildReactionAddEvent) -> None:
+    """Pin the message, listening to add reaction in a guild"""
+
     # event.channel_id.pin_message(event.message)
     if not event.is_for_emoji("📌"):
         return
@@ -38,8 +41,10 @@ async def pin_lol(event: hk.GuildReactionAddEvent) -> None:
 
 
 def load(bot: lb.BotApp) -> None:
+    """Load the plugin"""
     bot.add_plugin(pin_board)
 
 
 def unload(bot: lb.BotApp) -> None:
+    """Unload the plugin"""
     bot.remove_plugin(pin_board)

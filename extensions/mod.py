@@ -1,5 +1,6 @@
+"""Moderation commands for a guild"""
 import datetime
-from typing import Optional, Union
+from typing import Optional
 
 import asyncio
 import isodate
@@ -33,6 +34,7 @@ mod_plugin = lb.Plugin(
 @lb.command("purge", "Purge messages", aliases=["clear"])
 @lb.implements(lb.SlashCommand, lb.PrefixCommand)
 async def purge(ctx: lb.Context) -> None:
+    """Purge n messages"""
     if isinstance(ctx, lb.PrefixContext):
         await ctx.event.message.delete()
 
@@ -64,6 +66,14 @@ async def purge(ctx: lb.Context) -> None:
     lb.PrefixCommand,
 )
 async def kick_user(ctx: lb.Context, user: hk.User, reason: Optional[str]) -> None:
+    """Kick a user from a server
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        user (hk.User): The user to kick
+        reason (Optional[str]): The reason the user is being kicked
+    """
+
     if isinstance(ctx, lb.SlashContext):
         await ctx.respond(hk.ResponseType.DEFERRED_MESSAGE_CREATE)
     if reason:
@@ -96,6 +106,15 @@ async def kick_user(ctx: lb.Context, user: hk.User, reason: Optional[str]) -> No
 async def mute_user(
     ctx: lb.Context, user: hk.guilds.Member, time: str, reason: Optional[str]
 ) -> None:
+    """Mute a user
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        user (hk.guilds.Member): The user to mute
+        time (str): The time duration to mute for (eg. 2h, 1m etc.)
+        reason (Optional[str]): The reason the user is muted
+    """
+
     duration = datetime.datetime.now().astimezone() + isodate.parse_duration(
         f"PT{time.upper()}"
     )
@@ -113,23 +132,23 @@ async def mute_user(
         await user.send(f"Mute in `{ctx.get_guild()}` expired")
 
 
-@mod_plugin.command
-@lb.add_checks(lb.has_guild_permissions(hk.Permissions.MUTE_MEMBERS))
-@lb.option(
-    "reason",
-    "The reason said user was muted",
-    str,
-    required=False,
-    modifier=lb.commands.OptionModifier.CONSUME_REST,
-)
-@lb.option("time", "The time to hard-mute for", str)
-@lb.option("user", "The user to mute", hk.guilds.Member)
-@lb.command("hardmute", "Hard mute a user", pass_options=True)
-@lb.implements(lb.PrefixCommand)
-async def hard_mute_user(
-    ctx: lb.Context, user: hk.guilds.Member, time: str, reason: Optional[str]
-) -> None:
-    await ctx.respond("Sorry, command in development 👨‍🔬")
+# @mod_plugin.command
+# @lb.add_checks(lb.has_guild_permissions(hk.Permissions.MUTE_MEMBERS))
+# @lb.option(
+#     "reason",
+#     "The reason said user was muted",
+#     str,
+#     required=False,
+#     modifier=lb.commands.OptionModifier.CONSUME_REST,
+# )
+# @lb.option("time", "The time to hard-mute for", str)
+# @lb.option("user", "The user to mute", hk.guilds.Member)
+# @lb.command("hardmute", "Hard mute a user", pass_options=True)
+# @lb.implements(lb.PrefixCommand)
+# async def hard_mute_user(
+#     ctx: lb.Context, user: hk.guilds.Member, time: str, reason: Optional[str]
+# ) -> None:
+#     await ctx.respond("Sorry, command in development 👨‍🔬")
 
 
 @mod_plugin.command
@@ -152,6 +171,14 @@ async def hard_mute_user(
 async def ban_user(
     ctx: lb.Context, user: hk.guilds.Member, reason: Optional[str]
 ) -> None:
+    """Ban a user
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        user (hk.guilds.Member): The user to ban
+        reason (Optional[str]): The reason the user is being banned
+    """
+
     if isinstance(ctx, lb.SlashContext):
         await ctx.respond(hk.ResponseType.DEFERRED_MESSAGE_CREATE)
     if reason:
@@ -181,7 +208,17 @@ async def ban_user(
 @lb.implements(
     lb.PrefixCommand,
 )
-async def unban_user(ctx: lb.Context, user: str, reason: Optional[str]) -> None:
+async def unban_user(
+    ctx: lb.Context, user: hk.Snowflake, reason: Optional[str]
+) -> None:
+    """Unban a user
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        user (hk.Snowflake): The user to unban (enter the user id)
+        reason (Optional[str]): The reason for ban removal
+    """
+
     if reason:
         await ctx.bot.rest.unban_member(ctx.guild_id, user, reason=reason)
     else:
@@ -195,6 +232,8 @@ async def unban_user(ctx: lb.Context, user: str, reason: Optional[str]) -> None:
     lb.PrefixCommand,
 )
 async def hide_channel(ctx: lb.Context) -> None:
+    """Hide the current channel from the public"""
+
     overwrite = hk.PermissionOverwrite(
         id=980479965726404670,  # everyone role
         type=hk.PermissionOverwriteType.ROLE,
@@ -216,6 +255,8 @@ async def hide_channel(ctx: lb.Context) -> None:
     lb.PrefixCommand,
 )
 async def unhide_channel(ctx: lb.Context) -> None:
+    """Unhide current channel from public"""
+
     overwrite = hk.PermissionOverwrite(
         id=980479965726404670,  # everyone role
         type=hk.PermissionOverwriteType.ROLE,
@@ -231,54 +272,56 @@ async def unhide_channel(ctx: lb.Context) -> None:
     )
 
 
-@mod_plugin.command
-@lb.option("entity", "The user or role to hide channel from")
-@lb.command(
-    "hidefrom", "Hide👻 the channel from a user/role", pass_options=True, aliases=["hf"]
-)
-@lb.implements(lb.PrefixCommand)
-async def hide_from(ctx: lb.Context, entity: Union[hk.Member, hk.Role]) -> None:
-    await ctx.respond("Sorry, command in development 👨‍🔬")
-    return
+# @mod_plugin.command
+# @lb.option("entity", "The user or role to hide channel from")
+# @lb.command(
+#     "hidefrom", "Hide👻 the channel from a user/role", pass_options=True, aliases=["hf"]
+# )
+# @lb.implements(lb.PrefixCommand)
+# async def hide_from(ctx: lb.Context, entity: Union[hk.Member, hk.Role]) -> None:
+#     await ctx.respond("Sorry, command in development 👨‍🔬")
+#     return
 
-    # if isinstance(entity, hk.Member):
-    #     print("\n\nMember\n\n")
-    # if isinstance(entity, hk.User):
-    #     print("\n\nUser\n\n")
-    # if isinstance(entity, hk.Role):
-    #     print("\n\nRole\n\n")
-    # print("Might be none too lol. ")
-    # return
-    # # print(type(entity))
-    # # hk.Role
-    # # hk.Role.id
-    # if hk.User(entity).id:
-    #     print("Passes as user")
-    #     # print(entity.id)
-    # elif isinstance(entity, hk.Role):
-    #     print("Passes as role")
-    # else:
-    #     print("Passes as neither")
+# if isinstance(entity, hk.Member):
+#     print("\n\nMember\n\n")
+# if isinstance(entity, hk.User):
+#     print("\n\nUser\n\n")
+# if isinstance(entity, hk.Role):
+#     print("\n\nRole\n\n")
+# print("Might be none too lol. ")
+# return
+# # print(type(entity))
+# # hk.Role
+# # hk.Role.id
+# if hk.User(entity).id:
+#     print("Passes as user")
+#     # print(entity.id)
+# elif isinstance(entity, hk.Role):
+#     print("Passes as role")
+# else:
+#     print("Passes as neither")
 
-    # overwrite = hk.PermissionOverwrite(
-    #     id=entity.id,
-    #     type=hk.PermissionOverwriteType.MEMBER,
-    #     allow=(Permissions.NONE),
-    #     deny=(Permissions.VIEW_CHANNEL | Permissions.SEND_MESSAGES),
-    # )
-    # # hk.PermissionOverwrite
-    # await mod_plugin.bot.rest.edit_channel(
-    #     ctx.get_channel(), permission_overwrites=[overwrite]
-    # )
-    # await ctx.respond(
-    #     f"Channel hidden {hk.Emoji.parse('<a:peacedisappear: 1061571520457080882>')}."
-    # )
+# overwrite = hk.PermissionOverwrite(
+#     id=entity.id,
+#     type=hk.PermissionOverwriteType.MEMBER,
+#     allow=(Permissions.NONE),
+#     deny=(Permissions.VIEW_CHANNEL | Permissions.SEND_MESSAGES),
+# )
+# # hk.PermissionOverwrite
+# await mod_plugin.bot.rest.edit_channel(
+#     ctx.get_channel(), permission_overwrites=[overwrite]
+# )
+# await ctx.respond(
+#     f"Channel hidden {hk.Emoji.parse('<a:peacedisappear: 1061571520457080882>')}."
+# )
 
 
 @mod_plugin.command
 @lb.command("Remove embed", "Remove an embed from a message")
 @lb.implements(lb.MessageCommand)
 async def remove_embed(ctx: lb.MessageContext):
+    """Delete an embed from a message"""
+
     await ctx.respond(
         f"Deleting embed {hk.Emoji.parse('<a:loading_:1061933696648740945>')}"
     )
@@ -296,6 +339,8 @@ async def remove_embed(ctx: lb.MessageContext):
     lb.PrefixCommand,
 )
 async def lock_channel(ctx: lb.Context) -> None:
+    """Lock a channel from the public"""
+
     overwrite = hk.PermissionOverwrite(
         id=980479965726404670,
         type=hk.PermissionOverwriteType.ROLE,
@@ -318,6 +363,8 @@ async def lock_channel(ctx: lb.Context) -> None:
     lb.PrefixCommand,
 )
 async def unlock_channel(ctx: lb.Context) -> None:
+    """Unlock a channel and let everyone use it"""
+
     overwrite = hk.PermissionOverwrite(
         id=980479965726404670,
         type=hk.PermissionOverwriteType.ROLE,
@@ -339,6 +386,7 @@ async def unlock_channel(ctx: lb.Context) -> None:
 @lb.command("lockserv", "Lock the server⚡")
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def lock_server(ctx: lb.Context) -> None:
+    """Lock down the entire server like in a raid"""
     # allowed_perms = Permissions.VIEW_CHANNEL | Permissions.CHANGE_NICKNAME |
     # Permissions.READ_MESSAGE_HISTORY | Permissions.ADD_REACTIONS
     await ctx.respond()
@@ -365,6 +413,8 @@ async def lock_server(ctx: lb.Context) -> None:
 @lb.command("unlockserv", "Unlock the server👐")
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def unlock_server(ctx: lb.Context) -> None:
+    """Unlock the server to allow chatting again"""
+
     allowed_perms = (
         Permissions.VIEW_CHANNEL
         | Permissions.CHANGE_NICKNAME
@@ -388,6 +438,14 @@ async def unlock_server(ctx: lb.Context) -> None:
 @lb.command("preban", "Preban a user", pass_options=True)
 @lb.implements(lb.PrefixCommand)
 async def preban_create(ctx: lb.Context, userid: hk.Snowflake):
+    """Preban a user who is percieved to be dangerous.
+    They'd be banned upon joining the guild instantly
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        userid (hk.Snowflake): The user id to preban
+    """
+
     async with ctx.bot.rest.trigger_typing(ctx.event.channel_id):
         botdb = mod_plugin.bot.d.dbcon
         cur = botdb.cursor()
@@ -401,7 +459,7 @@ async def preban_create(ctx: lb.Context, userid: hk.Snowflake):
 @lb.command("censor", "Censor a word", pass_options=True)
 @lb.implements(lb.PrefixCommandGroup)
 async def censor(ctx: lb.Context):
-    pass
+    """Censor a word (delete it upon being thrown in the server)"""
 
 
 @censor.child
@@ -411,6 +469,13 @@ async def censor(ctx: lb.Context):
 )
 @lb.implements(lb.PrefixSubCommand)
 async def censor_add(ctx: lb.Context, word: str) -> None:
+    """Add a word to the censor list
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        word (str): The word to censor
+    """
+
     async with ctx.bot.rest.trigger_typing(ctx.event.channel_id):
         botdb = mod_plugin.bot.d.dbcon
         cur = botdb.cursor()
@@ -431,6 +496,12 @@ async def censor_add(ctx: lb.Context, word: str) -> None:
 )
 @lb.implements(lb.PrefixSubCommand)
 async def censor_remove(ctx: lb.Context, word: str) -> None:
+    """Remove a word from the censor list
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+        word (str): The word to uncensor
+    """
     async with ctx.bot.rest.trigger_typing(ctx.event.channel_id):
         botdb = mod_plugin.bot.d.dbcon
         cur = botdb.cursor()
@@ -446,6 +517,8 @@ async def censor_remove(ctx: lb.Context, word: str) -> None:
 
 @mod_plugin.listener(hk.GuildMessageCreateEvent)
 async def banned_words(event: hk.GuildMessageCreateEvent) -> None:
+    """Listen to instances of banned words and delete if so"""
+
     if event.is_bot:
         return
     cur = mod_plugin.bot.d.dbcon.cursor()
@@ -465,11 +538,13 @@ async def banned_words(event: hk.GuildMessageCreateEvent) -> None:
 
 @mod_plugin.listener(hk.MemberCreateEvent)
 async def preban(event: hk.MemberCreateEvent):
+    """Preban hook to be executed when a user joins the server"""
+
     cur = mod_plugin.bot.d.dbcon.cursor()
     query = "SELECT * FROM prebannedusers WHERE userid=?"
     args = (event.member.id,)
     cur.execute(query, args)
-    banid = c.fetchone()
+    banid = cur.fetchone()
     if banid:
         if not event.member.is_bot:
             await event.member.send(
@@ -488,49 +563,52 @@ async def preban(event: hk.MemberCreateEvent):
 
 @mod_plugin.listener(hk.GuildThreadCreateEvent)
 async def join_thread(event: hk.GuildThreadCreateEvent):
+    """Join a thread upon creation"""
+
     await mod_plugin.bot.rest.join_thread(event.thread_id)
 
 
-@mod_plugin.listener(hk.MessageDeleteEvent)
-async def sniper(event: hk.MessageDeleteEvent):
-    if event.is_bot:
-        return
+# @mod_plugin.listener(hk.MessageDeleteEvent)
+# async def sniper(event: hk.MessageDeleteEvent):
+#     if event.is_bot:
+#         return
 
-    # raise NotImplementedError
-    return
+#     # raise NotImplementedError
+#     return
 
-    # THIS FUNCTION IS ARCHIVED FOR THE ONE IN LOG
+# THIS FUNCTION IS ARCHIVED FOR THE ONE IN LOG
 
-    # message = event.old_message
+# message = event.old_message
 
-    # if message.author.is_bot:
-    #     return
+# if message.author.is_bot:
+#     return
 
-    # embedColor = 0x000000
-    # # async for role in (await message.author.fetch_roles())[::-1]:
-    # #     if role.color != hk.Color(0x000000):
-    # #         embedColor = role.color
-    # await mod_plugin.bot.rest.create_message(
-    #     channel=event.old_message.channel_id,
-    #     # content=f"message {message.content} by {message.author} {message.author.avatar_url}",
-    #     embed=hk.Embed(
-    #         description=message.content, color=embedColor, timestamp=message.timestamp
-    #     ).set_author(name=f"{message.author}", icon=message.author.avatar_url),
-    # )
-    # # await mod_plugin.bot.rest.create_message(
-    # #     channel=message.channel_id,
-    # #     embed=hk.Embed(
-    # #         description=message.content, timestamp=message.timestamp
-    # #     )
-    # #     .set_author(name=message.author, icon=message.author.default_avatar_url),
-    # #     attachments=message.attachments
-    # # )
+# embedColor = 0x000000
+# # async for role in (await message.author.fetch_roles())[::-1]:
+# #     if role.color != hk.Color(0x000000):
+# #         embedColor = role.color
+# await mod_plugin.bot.rest.create_message(
+#     channel=event.old_message.channel_id,
+#     # content=f"message {message.content} by {message.author} {message.author.avatar_url}",
+#     embed=hk.Embed(
+#         description=message.content, color=embedColor, timestamp=message.timestamp
+#     ).set_author(name=f"{message.author}", icon=message.author.avatar_url),
+# )
+# # await mod_plugin.bot.rest.create_message(
+# #     channel=message.channel_id,
+# #     embed=hk.Embed(
+# #         description=message.content, timestamp=message.timestamp
+# #     )
+# #     .set_author(name=message.author, icon=message.author.default_avatar_url),
+# #     attachments=message.attachments
+# # )
 
-    # await message.context.respond(
+# await message.context.respond(
 
 
 @purge.set_error_handler
 async def on_purge_error(event: lb.CommandErrorEvent) -> bool:
+    """Exception Handler"""
     exception = event.exception.__cause__ or event.exception
 
     if isinstance(exception, lb.MissingRequiredPermission):
@@ -539,34 +617,35 @@ async def on_purge_error(event: lb.CommandErrorEvent) -> bool:
         )
         return True
 
-    elif isinstance(exception, lb.BotMissingRequiredPermission):
+    if isinstance(exception, lb.BotMissingRequiredPermission):
         await event.context.respond("I don't have the permissions to do this 😔")
         return True
 
-    elif isinstance(exception, isodate.isoerror.ISO8601Error):
+    if isinstance(exception, isodate.isoerror.ISO8601Error):
         await event.context.respond("Couldn't parse time duration.")
+        return True
 
-    elif isinstance(exception, lb.CommandIsOnCooldown):
+    if isinstance(exception, lb.CommandIsOnCooldown):
         await event.context.respond(
             f"The command is on cooldown, you can use it after {int(exception.retry_after)}s",
             delete_after=int(exception.retry_after),
         )
         return True
 
-    elif isinstance(exception, hk.errors.BadRequestError):
+    if isinstance(exception, hk.errors.BadRequestError):
         await event.context.respond(
             "You can only delete messages under 14 days old", delete_after=3
         )
         return True
 
-    elif isinstance(exception, lb.errors.NotEnoughArguments):
+    if isinstance(exception, lb.errors.NotEnoughArguments):
         await event.context.respond(
             "Kindly specify the number of messages to be deleted", delete_after=3
         )
         return True
 
     # use a webhook for this?
-    elif isinstance(exception, hk.errors.ForbiddenError):
+    if isinstance(exception, hk.errors.ForbiddenError):
         await event.context.respond("Error: Can't DM this user.")
 
     return False
@@ -581,8 +660,10 @@ hide_channel.set_error_handler(on_purge_error)
 
 
 def load(bot: lb.BotApp) -> None:
+    """Load the plugin"""
     bot.add_plugin(mod_plugin)
 
 
 def unload(bot: lb.BotApp) -> None:
+    """Unload the plugin"""
     bot.remove_plugin(mod_plugin)

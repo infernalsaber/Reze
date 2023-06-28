@@ -1,31 +1,33 @@
+"""The main file of the bot, basically sets up and starts the bot """
 import os
 import asyncio
-import dotenv
 import datetime
 import sqlite3
 import logging
+
 import aiohttp
+import dotenv
+import asyncpraw
 
 import hikari as hk
 import lightbulb as lb
 import miru
 from lightbulb.ext import tasks
 
-import asyncpraw
-
 
 dotenv.load_dotenv()
 
 
-# TODO
-# 1. Create a global error handler (shorturl.at/dowBG)✔
-
-
 # The following snippet is borrowed from:
-# https://github.com/Nereg/ARKMonitorBot/blob/1a6cedf34d531bddf0f5b11b3238344192998997/src/main.py#L14
+# https://github.com/Nereg/ARKMonitorBot/blob/
+# 1a6cedf34d531bddf0f5b11b3238344192998997/src/main.py#L14
+
+# FUCK MAKING CODE PEP-8 COMPLAINT
 
 
 def setup_logging() -> None:
+    """Set up the logging of the events to log.txt (for debugging) [Level-1]"""
+
     # get root logger
     root_logger = logging.getLogger("")
     # create a rotating file handler with 1 backup file and 1 megabyte size
@@ -65,6 +67,8 @@ bot.load_extensions_from("./extensions/")
 
 @bot.listen()
 async def on_starting(event: hk.StartingEvent) -> None:
+    """Code which is executed once when the bot starts"""
+
     bot.d.aio_session = aiohttp.ClientSession()
     bot.d.reddit = asyncpraw.Reddit(
         client_id=os.environ["CLIENT_ID"],
@@ -78,13 +82,15 @@ async def on_starting(event: hk.StartingEvent) -> None:
         os.mkdir("pictures/visual")
         os.mkdir("videos")
         os.mkdir("logs")
-    with open("./logs/log.txt", "w+"):
+    with open("./logs/log.txt", "w+", encoding="utf-8"):
         pass
     setup_logging()
 
 
 @bot.listen()
 async def on_stopping(event: hk.StoppingEvent) -> None:
+    """Code which is executed once when the bot stops"""
+
     await bot.d.aio_session.close()
     await bot.d.reddit.close()
     bot.d.dbcon.close()
@@ -94,11 +100,25 @@ async def on_stopping(event: hk.StoppingEvent) -> None:
 @lb.command("ping", description="The bot's ping")
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def ping(ctx: lb.Context) -> None:
+    """Check the latency of the bot
+
+    Args:
+        ctx (lb.Context): The event context (irrelevant to the user)
+    """
     await ctx.respond(f"Pong! Latency: {bot.heartbeat_latency*1000:.2f}ms")
 
 
 @bot.listen(lb.CommandErrorEvent)
 async def on_error(event: lb.CommandErrorEvent) -> None:
+    """The base function to listen for all errors
+
+    Args:
+        event (lb.CommandErrorEvent): The event context (irrelevant to the user)
+
+    Raises:
+        event.exception: Base exception probably
+    """
+
     if isinstance(event.exception, lb.CommandInvocationError):
         await event.context.respond(
             f"Something went wrong during invocation of command `{event.context.command.name}`."
@@ -133,8 +153,10 @@ async def on_error(event: lb.CommandErrorEvent) -> None:
 
     elif isinstance(exception, lb.NotEnoughArguments):
         await event.context.respond(
-            f"Missing arguments, use `-help {event.context.command.name}` \
-            for the correct invocation"
+            (
+                f"Missing arguments, use `-help {event.context.command.name}`"
+                f"for the correct invocation"
+            )
         )
 
 

@@ -1,14 +1,16 @@
+"""The extension which fetches the AL data for the plot function"""
 from operator import itemgetter
 import datetime
 import requests
 
 
-import numpy as np
-
 import plotly.io as pio
 
+# import numpy as np
 
-async def searchIt(search_query: str) -> dict | int:
+
+async def search_it(search_query: str) -> dict | int:
+    """Search for the anime"""
     # Here we define our query as a multi-line string
     query = """
 query ($id: Int, $search: String) { 
@@ -48,7 +50,7 @@ query ($id: Int, $search: String) {
     if response.status_code == 200:
         print("Successfull connection")
         data = response.json()["data"]["Media"]
-        id = data["id"]
+        al_id = data["id"]
         name = data["title"]["english"] or data["title"]["romaji"]
         lower_limit = datetime.datetime(
             data["startDate"]["year"],
@@ -103,7 +105,7 @@ query ($id: Int, $search: String) {
         """
 
         variables = {
-            "id": id,
+            "id": al_id,
             "page": counter,
             "perpage": 50,
             "date_greater": lower_limit.timestamp(),
@@ -127,7 +129,6 @@ query ($id: Int, $search: String) {
             # print("ERROR")
             print(response.json()["errors"])
             return response.status_code
-            break
 
     # Parsing the values
 
@@ -161,6 +162,7 @@ query ($id: Int, $search: String) {
 
     # y_axis = np.array(trends)
 
-    return dict(
-        name=name, data=[dates, trends, dates2, trends2, dates[-len(scores) :], scores]
-    )
+    return {
+        "name": name,
+        "data": [dates, trends, dates2, trends2, dates[-len(scores) :], scores],
+    }
