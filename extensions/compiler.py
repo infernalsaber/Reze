@@ -1,21 +1,15 @@
-# import os, lxml, re, json, urllib.request, requests
-# from bs4 import BeautifulSoup
-# from PIL import Image
-
-# from typing import Optional
+import subprocess
 
 import hikari as hk
 import lightbulb as lb
 
-# import miru
-# from miru.ext import nav
-
-import subprocess
-
 
 compiler_plugin = lb.Plugin("Compiler", "An interpreter for Python")
 
-dscSyntaxGist = "https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7d40e51#syntax-highlighting"
+disc_syntax_gist = (
+    "https://gist.github.com/matthewzring"
+    "/9f7bbfd102003963f9be7dbcf7d40e51#syntax-highlighting"
+)
 
 # import time
 
@@ -35,7 +29,7 @@ dscSyntaxGist = "https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7
 async def compiler(ctx: lb.Context, code: str) -> None:
     if not (code.startswith("```py") and code.endswith("```")):
         await ctx.respond(
-            f"The entered code is not formatted correctly according to python. Consider referring : {hk.URL(dscSyntaxGist)}."
+            f"The entered code is not formatted correctly according to python. Consider referring : {hk.URL(disc_syntax_gist)}."
         )
         return
     # print(code[5:-3])
@@ -56,7 +50,7 @@ async def compiler(ctx: lb.Context, code: str) -> None:
     else:
         if not output:
             # await ctx.respond("Yamete")
-            await ctx.respond(f"This is the output ```        ```")
+            await ctx.respond("This is the output ```        ```")
         else:
             # a = (str(output, 'UTF-8'))
             await ctx.respond(f"This is the output ```ansi\n{str(output, 'UTF-8')}```")
@@ -70,37 +64,37 @@ async def compiler(ctx: lb.Context, code: str) -> None:
 )
 @lb.command("dbm", "Modify the database", pass_options=True, aliases=["sql"])
 @lb.implements(lb.PrefixCommand)
-async def compiler(ctx: lb.Context, code: str) -> None:
+async def sql_query(ctx: lb.Context, code: str) -> None:
     raise NotImplementedError
-    return
-    if not (code.startswith("```sql") and code.endswith("```")):
-        await ctx.respond(
-            f"The entered code is not formatted correctly according to sql. Consider referring : {hk.URL(dscSyntaxGist)}."
-        )
-        return
-    botdb = ctx.bot.d.dbcon
+    # return
+    # if not (code.startswith("```sql") and code.endswith("```")):
+    #     await ctx.respond(
+    #         f"The entered code is not formatted correctly according to sql. Consider referring : {hk.URL(disc_syntax_gist)}."
+    #     )
+    #     return
+    # botdb = ctx.bot.d.dbcon
 
-    c = botdb.cursor()
-    c.execute(query[6:-3])
-    res = c.fetchall()
-    if res:
-        await ctx.respond("f```{res}```")
+    # c = botdb.cursor()
+    # c.execute(query[6:-3])
+    # res = c.fetchall()
+    # if res:
+    #     await ctx.respond("f```{res}```")
 
-    result = subprocess.Popen(
-        ["python", "ntfc.py"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
-    output, error = result.communicate()
-    print(output, error)
-    if error:
-        await ctx.respond(
-            f"Process returned with error: ```{(str(error, 'UTF-8')).split('ntfc.py')[1][3:]}```"
-        )
-    else:
-        if not output:
-            await ctx.respond(f"This is the output ```        ```")
-        else:
-            # a = (str(output, 'UTF-8'))
-            await ctx.respond(f"This is the output ```ansi\n{str(output, 'UTF-8')}```")
+    # result = subprocess.Popen(
+    #     ["python", "ntfc.py"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    # )
+    # output, error = result.communicate()
+    # print(output, error)
+    # if error:
+    #     await ctx.respond(
+    #         f"Process returned with error: ```{(str(error, 'UTF-8')).split('ntfc.py')[1][3:]}```"
+    #     )
+    # else:
+    #     if not output:
+    #         await ctx.respond(f"This is the output ```        ```")
+    #     else:
+    #         # a = (str(output, 'UTF-8'))
+    #         await ctx.respond(f"This is the output ```ansi\n{str(output, 'UTF-8')}```")
 
 
 @compiler.set_error_handler

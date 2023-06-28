@@ -1,9 +1,9 @@
+import io
+from typing import Literal, Union, Optional
 import requests
 from PIL import Image
-import io
 from bs4 import BeautifulSoup
 
-from typing import Literal, Union, Optional
 
 import hikari as hk
 from miru.ext import nav
@@ -15,32 +15,32 @@ async def get_top_colour(user: hk.Member) -> hk.Color:
     roles = sorted(
         roles, key=lambda role: role.position, reverse=True
     )  # sort them by position, then reverse the order to go from top role down
-    topColor = "#000000"
+    top_color = "#000000"
     for role in (await user.fetch_roles())[::-1]:
         if role.color != hk.Color(0x000000):
-            topColor = role.color
+            top_color = role.color
 
-    return topColor
+    return top_color
 
 
-def get_dominant_colour(PIL_img: Image.Image, show: Optional[bool] = 0) -> hk.Color:
-    PIL_img = PIL_img.resize((1, 1), resample=0)
-    dominant_color: tuple = PIL_img.getpixel((0, 0))
+def get_dominant_colour(pillow_img: Image.Image, show: Optional[bool] = 0) -> hk.Color:
+    pillow_img = pillow_img.resize((1, 1), resample=0)
+    dominant_color: tuple = pillow_img.getpixel((0, 0))
     if show:
-        PIL_img.resize((75, 75)).show()  # show the image if desired
+        pillow_img.resize((75, 75)).show()  # show the image if desired
 
     return dominant_color
 
 
 def get_image_dominant_colour(link: str) -> hk.Color:
     return hk.Color.of(
-        get_dominant_colour(Image.open(requests.get(link, stream=True).raw))
+        get_dominant_colour(Image.open(requests.get(link, stream=True, timeout=10).raw))
     )
 
 
 def is_image(link: str) -> bool:
     try:
-        Image.open(io.BytesIO(requests.get(link).content))
+        Image.open(io.BytesIO(requests.get(link, timeout=10).content))
         return True
     except Image.UnidentifiedImageError:
         return False
@@ -51,7 +51,7 @@ def is_image(link: str) -> bool:
 
 # import enum
 def type_of_response(link: str) -> Literal["image", "json", "html", "unknown"]:
-    response = requests.get(link)
+    response = requests.get(link, timeout=10)
     try:
         Image.open(io.BytesIO(response.content))
         return "image"
@@ -81,15 +81,11 @@ class requestsFailedError(CustomError):
     Exception raised when the API the request is fetched from fails
     """
 
-    pass
-
 
 class injectionRiskError(CustomError):
     """
     Exception raised when the input may risk injection of code into the database
     """
-
-    pass
 
 
 class fileSizeError(CustomError):
@@ -98,11 +94,11 @@ class fileSizeError(CustomError):
     size limit (25MB as of May 2023)
     """
 
-    pass
-
 
 # Navigator Buttons Miru
 class CustomPrevButton(nav.NavButton):
+    """A custom previous button class"""
+
     def __init__(
         self,
         *,
@@ -130,6 +126,8 @@ class CustomPrevButton(nav.NavButton):
 
 
 class CustomNextButton(nav.NavButton):
+    """A custom next button class"""
+
     def __init__(
         self,
         *,
@@ -158,6 +156,8 @@ class CustomNextButton(nav.NavButton):
 
 # General Miru Buttons
 class GenericButton(miru.Button):
+    """A custom next general class"""
+
     # Let's leave our arguments dynamic this time, instead of hard-coding them
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -169,6 +169,8 @@ class GenericButton(miru.Button):
 
 
 class KillButton(miru.Button):
+    """A custom next kill class"""
+
     # Let's leave our arguments dynamic this time, instead of hard-coding them
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)

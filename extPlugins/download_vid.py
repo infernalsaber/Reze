@@ -6,8 +6,8 @@ def length_filter(info, *, incomplete):
     duration = info.get("duration")
 
     if duration and (duration >= 601 or duration < 60):
-        """Videos longer than 8:21 [Mirrors - Justin Timberlake] or shorter than 1:00
-        [Yugi-Oh 5D's Opening 5] are not downloaded"""
+        # Videos longer than 8:21 [Mirrors - Justin Timberlake] or shorter than 1:00
+        # [Yugi-Oh 5D's Opening 5] are not downloaded
         return "Invalid file duration"
 
 
@@ -21,7 +21,7 @@ def my_hook(d):
 #         print('\nDone converting and embedding, now playing ...\n')
 
 
-async def downloadVideo(URL: str, duration: int = None) -> int | str:
+async def downloadVideo(url: str, duration: int = None) -> int | str:
     # print("Duration is", duration)
 
     if duration and duration > 270 and duration < 450:  # UNCOMMENT THIS
@@ -61,5 +61,5 @@ async def downloadVideo(URL: str, duration: int = None) -> int | str:
     }
 
     with YoutubeDL(ydl_opts) as ydl:
-        error_code = ydl.download(URL)
+        error_code = ydl.download(url)
         print(error_code)

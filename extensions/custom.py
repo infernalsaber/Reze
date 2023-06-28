@@ -14,11 +14,11 @@ customcmd_plugin = lb.Plugin("Custom Commands")
 @lb.command("peakfiction", "Your peak fiction, your goat", aliases=["pf", "goat"])
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
 async def peak_fiction(ctx: lb.Context) -> None:
-    c = ctx.bot.d.dbcon.cursor()
+    cur = ctx.bot.d.dbcon.cursor()
     query = "SELECT * from userinfo WHERE userid=?"
     args = (ctx.author.id,)
-    c.execute(query, args)
-    resp = c.fetchone()
+    cur.execute(query, args)
+    resp = cur.fetchone()
     if not resp or len(resp) == 0:
         await ctx.respond(
             "Nothing found, add your goat using `-peakfiction add` or `-pf a` for short."
@@ -47,19 +47,19 @@ async def peak_group(ctx: lb.Context) -> None:
 async def add_subcommand(ctx: lb.Context, link: str) -> None:
     if ";" in link:
         raise injectionRiskError
-        return
+
     botdb = ctx.bot.d.dbcon
-    c = botdb.cursor()
+    cur = botdb.cursor()
     query = "SELECT * from userinfo WHERE userid=?"
     args = (ctx.author.id,)
-    c.execute(query, args)
-    if c.fetchone():
+    cur.execute(query, args)
+    if cur.fetchone():
         await ctx.respond("You already have one, use `-pf` to check it")
         return
 
     query = "INSERT INTO userinfo VALUES (?,?,?)"
     args = (ctx.author.id, ctx.author.username, link)
-    c.execute(query, args)
+    cur.execute(query, args)
     await ctx.respond(f"Added successfully ✅")
     botdb.commit()
 
@@ -73,16 +73,16 @@ async def add_subcommand(ctx: lb.Context, link: str) -> None:
     pass_options=True,
 )
 @lb.implements(lb.PrefixSubCommand)
-async def add_subcommand(ctx: lb.Context, link: str) -> None:
+async def edit_subcommand(ctx: lb.Context, link: str) -> None:
     if ";" in link:
         raise injectionRiskError
-        return
+
     botdb = ctx.bot.d.dbcon
-    c = botdb.cursor()
+    cur = botdb.cursor()
     query = "UPDATE userinfo SET favourite=? where userid=?"
     args = (link, ctx.author.id)
-    c.execute(query, args)
-    await ctx.respond(f"Updated successfully ✅")
+    cur.execute(query, args)
+    await ctx.respond("Updated successfully ✅")
     botdb.commit()
 
 
@@ -156,15 +156,15 @@ async def edit_subcommand(ctx: lb.Context, link: str) -> None:
 @lb.option("command", "The command to delete")
 @lb.command("delete", "Delete a custom command", aliases=["d"], pass_options=True)
 @lb.implements(lb.PrefixSubCommand)
-async def delete_subcommand(ctx: lb.Context, link: str) -> None:
+async def delete_subcommand(ctx: lb.Context, command: str) -> None:
     if ";" in string:
         raise injectionRiskError
 
     botdb = ctx.bot.d.dbcon
-    c = botdb.cursor()
+    cur = botdb.cursor()
     query = "DELETE FROM commands WHERE name=?"
-    args = (name,)
-    c.execute(query, args)
+    args = (command,)
+    cur.execute(query, args)
     await ctx.respond(f"Deleted command: `{command}`")
 
 
@@ -177,11 +177,11 @@ async def custom_commands(event: hk.GuildMessageCreateEvent) -> None:
 
     async with customcmd_plugin.bot.rest.trigger_typing(event.channel_id):
         botdb = customcmd_plugin.bot.d.dbcon
-        c = botdb.cursor()
+        cur = botdb.cursor()
 
         query = "SELECT name,output FROM commands"
-        c.execute(query)
-        commands = c.fetchall()
+        cur.execute(query)
+        commands = cur.fetchall()
 
         for item in commands:
             if args[0] == item[0]:

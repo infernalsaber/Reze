@@ -4,12 +4,6 @@ import lightbulb as lb
 util_plugin = lb.Plugin("Utility", "Commands intended to up the UX")
 
 
-# TODO
-# 1. Implement a /embed command with option to add which channel to send to ✅
-# 2. Implement a /announce command (options for role mention and channel) ✔
-
-
-
 @util_plugin.command
 @lb.option(
     "image",
@@ -94,12 +88,12 @@ async def make_embed(
 )
 @lb.command("announce", "Make an announcement", pass_options=True)
 @lb.implements(lb.SlashCommand)
-async def make_embed(
+async def announce(
     ctx: lb.Context,
     channel: hk.TextableGuildChannel,
     content: str,
     role: hk.Role = None,
-    footer: bool = False,
+    # footer: bool = False,
     role2: hk.Role = hk.undefined.UNDEFINED,
     image: str = None,
 ) -> None:
@@ -108,7 +102,7 @@ async def make_embed(
         roles.append(role.mention)
     if role2:
         roles.append(role2.mention)
-    roles = " ".join(roles) if not roles == [] else ""
+    roles = " ".join(roles) if not roles else ""
     await util_plugin.bot.rest.create_message(
         channel=channel,
         embed=hk.Embed().set_image(image) if image else hk.undefined.UNDEFINED,
@@ -123,7 +117,7 @@ async def make_embed(
 @lb.option("text", "The text to repeat", str, modifier=lb.OptionModifier.CONSUME_REST)
 @lb.command("echo", "Repeat")
 @lb.implements(lb.PrefixCommand)
-async def make_embed(ctx: lb.Context) -> None:
+async def echo(ctx: lb.Context) -> None:
     await ctx.respond(
         ctx.options.text, user_mentions=True, role_mentions=True, mentions_everyone=True
     )
@@ -135,8 +129,8 @@ async def make_embed(ctx: lb.Context) -> None:
 @lb.command("addplugin", "Add a plugin", aliases=["ap"], pass_options=True)
 @lb.implements(lb.PrefixCommand)
 async def make_embed(ctx: lb.Context, code: str) -> None:
-    with open("extensions/new.py", "a+") as f:
-        f.write(code)
+    with open("extensions/new.py", "a+") as pyfile:
+        pyfile.write(code)
     ctx.bot.load_extensions("extensions.new")
     await ctx.respond("Done👍", delete_after=5)
 

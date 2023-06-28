@@ -1,23 +1,17 @@
+from datetime import datetime
+from typing import Optional
+import psutil
+
 import hikari as hk
 import lightbulb as lb
 import miru
 
-from datetime import datetime
-from typing import Optional
-import psutil
 
 from extPlugins.misc import get_top_colour, get_image_dominant_colour
 from extensions.dir import GenericButton
 
 
 info_plugin = lb.Plugin("Info", "Get information about an entity")
-
-"""
-#TODO
-1. Fix the layout ✅
-2. Add user banner as image ✅
-3. Server Info ✅
-"""
 
 
 @info_plugin.command
@@ -38,14 +32,14 @@ async def userinfo(ctx: lb.Context, user: Optional[hk.User] = None) -> None:
         await ctx.respond("That user is not in the server.")
         return
 
-    embedColor = await get_top_colour(user)
+    embed_colour = await get_top_colour(user)
     roles = (await user.fetch_roles())[1:]
 
     await ctx.respond(
         hk.Embed(
             title=f"User: {user.display_name}",
             description=f"User ID: `{user.id}`",
-            colour=embedColor,
+            colour=embed_colour,
             timestamp=datetime.now().astimezone(),
         )
         .set_footer(
@@ -85,7 +79,7 @@ async def userinfo(ctx: lb.Context, user: Optional[hk.User] = None) -> None:
 @info_plugin.command
 @lb.command("serverinfo", "Get general info about the server", aliases=["server"])
 @lb.implements(lb.PrefixCommand, lb.SlashCommand)
-async def userinfo(ctx: lb.Context) -> None:
+async def serverinfo(ctx: lb.Context) -> None:
     if not (guild := ctx.get_guild()):
         await ctx.respond("This command may only be used in servers.")
         return
@@ -115,11 +109,11 @@ async def userinfo(ctx: lb.Context) -> None:
 @info_plugin.command
 @lb.command("botinfo", "Get general info about the server", aliases=["info"])
 @lb.implements(lb.PrefixCommand)
-async def userinfo(ctx: lb.Context) -> None:
+async def botinfo(ctx: lb.Context) -> None:
     user = info_plugin.bot.get_me()
     data = await info_plugin.bot.rest.fetch_application()
     # print(data.owner)
-    guilds = [e for e in await info_plugin.bot.rest.fetch_my_guilds()]
+    guilds = list(await info_plugin.bot.rest.fetch_my_guilds())
     # print(guilds)
 
     member = 0
@@ -145,7 +139,7 @@ async def userinfo(ctx: lb.Context) -> None:
         .add_field("Name", user)
         .add_field("No of Servers", len(guilds), inline=True)
         .add_field("No of Members", member, inline=True)
-        .add_field("Version", "v0.2.0")
+        .add_field("Version", "v0.2.1")
         .add_field(
             "Alive since", f"<t:{int(user.created_at.timestamp())}:R>", inline=True
         )
@@ -166,7 +160,8 @@ async def userinfo(ctx: lb.Context) -> None:
         .set_author(name=f"{user.username} Bot")
         .set_thumbnail(user.avatar_url)
         .set_image(
-            "https://media.discordapp.net/attachments/1005948828484108340/1108082051246198824/69886913365.png"
+            "https://media.discordapp.net/\
+            attachments/1005948828484108340/1108082051246198824/69886913365.png"
         )
         .set_footer(f"Made by: {data.owner}", icon=data.owner.avatar_url),
         components=view,

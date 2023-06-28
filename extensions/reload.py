@@ -1,21 +1,7 @@
-# import os, lxml, re, json, urllib.request, requests
-# from bs4 import BeautifulSoup
-# from PIL import Image
-
-# from typing import Optional
-
 import lightbulb as lb
 
-# import miru
-# from miru.ext import nav
 
-# import subprocess
-
-
-reload_plugin = lb.Plugin("Loader", "Load, unload and reload plugins")
-
-
-# import time
+reloader_plugin = lb.Plugin("Loader", "Load, unload and reload plugins")
 
 
 @reload_plugin.command
@@ -27,7 +13,7 @@ reload_plugin = lb.Plugin("Loader", "Load, unload and reload plugins")
 )
 @lb.command("reload", "Reload an extension", pass_options=True, aliases=["rl"])
 @lb.implements(lb.PrefixCommand)
-async def reload(ctx: lb.Context, extension: str) -> None:
+async def reload_plugin(ctx: lb.Context, extension: str) -> None:
     ctx.bot.reload_extensions(f"extensions.{extension}")
     # try:
     #     ctx.bot.unload_extensions(f"extensions.{extension}")
@@ -45,7 +31,7 @@ async def reload(ctx: lb.Context, extension: str) -> None:
 @lb.option("extension", "The extension to load")
 @lb.command("load", "Load an extension", pass_options=True, aliases=["l"])
 @lb.implements(lb.PrefixCommand)
-async def load(ctx: lb.Context, extension: str) -> None:
+async def load_plugin(ctx: lb.Context, extension: str) -> None:
     ctx.bot.load_extensions(f"extensions.{extension}")
     await ctx.respond(f"Extension {extension} loaded successfully.")
 
@@ -55,9 +41,9 @@ async def load(ctx: lb.Context, extension: str) -> None:
 @lb.option("extension", "The extension to unload")
 @lb.command("unload", "Unload an extension", pass_options=True, aliases=["ul"])
 @lb.implements(lb.PrefixCommand)
-async def unload(ctx: lb.Context, extension: str) -> None:
+async def unload_plugin(ctx: lb.Context, extension: str) -> None:
     ctx.bot.unload_extensions(f"extensions.{extension}")
-    await ctx.respond(f"Extension unloaded successfully.")
+    await ctx.respond("Extension unloaded successfully.")
 
 
 @reload.set_error_handler

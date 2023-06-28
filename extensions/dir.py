@@ -1,3 +1,4 @@
+from extPlugins.misc import GenericButton, KillButton
 import os
 
 import lightbulb as lb
@@ -8,7 +9,6 @@ import miru
 dir_plugin = lb.Plugin("Directory", "Access the bot's storage directory")
 
 # from extensions.yt import GenericButton
-from extPlugins.misc import GenericButton, KillButton
 
 
 @dir_plugin.command

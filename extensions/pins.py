@@ -1,5 +1,5 @@
-import lightbulb as lb
 import hikari as hk
+import lightbulb as lb
 
 pin_board = lb.Plugin("Pins", "Pin messages with >x 📌 reactions (wannabe starboard)")
 

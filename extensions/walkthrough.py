@@ -28,7 +28,8 @@ async def walkthrough_cmd(ctx: lb.Context) -> None:
     pages.append(
         hk.Embed(
             title="Search YouTube",
-            description="Get your music off YT. \n**NOTE:** If you have the link, consider using the -ytdl command",
+            description="Get your music off YT. \n\
+            **NOTE:** If you have the link, consider using the -ytdl command",
         ).set_image("https://files.catbox.moe/6iltvy.gif")
     )
     # DB
