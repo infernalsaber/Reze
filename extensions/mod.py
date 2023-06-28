@@ -572,11 +572,12 @@ async def on_purge_error(event: lb.CommandErrorEvent) -> bool:
     return False
 
 
-lock.set_error_handler(on_purge_error)
+lock_channel.set_error_handler(on_purge_error)
+lock_server.set_error_handler(on_purge_error)
 ban_user.set_error_handler(on_purge_error)
 kick_user.set_error_handler(on_purge_error)
 unban_user.set_error_handler(on_purge_error)
-hide_from.set_error_handler(on_purge_error)
+hide_channel.set_error_handler(on_purge_error)
 
 
 def load(bot: lb.BotApp) -> None:

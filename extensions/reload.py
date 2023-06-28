@@ -4,7 +4,7 @@ import lightbulb as lb
 reloader_plugin = lb.Plugin("Loader", "Load, unload and reload plugins")
 
 
-@reload_plugin.command
+@reloader_plugin.command
 @lb.add_checks(lb.owner_only)
 @lb.option(
     "extension",
@@ -26,7 +26,7 @@ async def reload_plugin(ctx: lb.Context, extension: str) -> None:
     await ctx.respond("Extension reloaded successfully.")
 
 
-@reload_plugin.command
+@reloader_plugin.command
 @lb.add_checks(lb.owner_only)
 @lb.option("extension", "The extension to load")
 @lb.command("load", "Load an extension", pass_options=True, aliases=["l"])
@@ -36,7 +36,7 @@ async def load_plugin(ctx: lb.Context, extension: str) -> None:
     await ctx.respond(f"Extension {extension} loaded successfully.")
 
 
-@reload_plugin.command
+@reloader_plugin.command
 @lb.add_checks(lb.owner_only)
 @lb.option("extension", "The extension to unload")
 @lb.command("unload", "Unload an extension", pass_options=True, aliases=["ul"])
@@ -46,7 +46,7 @@ async def unload_plugin(ctx: lb.Context, extension: str) -> None:
     await ctx.respond("Extension unloaded successfully.")
 
 
-@reload.set_error_handler
+@reload_plugin.set_error_handler
 async def compile_error(event: lb.CommandErrorEvent) -> bool:
     exception = event.exception.__cause__ or event.exception
 
@@ -69,8 +69,8 @@ async def compile_error(event: lb.CommandErrorEvent) -> bool:
 
 
 def load(bot: lb.BotApp) -> None:
-    bot.add_plugin(reload_plugin)
+    bot.add_plugin(reloader_plugin)
 
 
 def unload(bot: lb.BotApp) -> None:
-    bot.remove_plugin(reload_plugin)
+    bot.remove_plugin(reloader_plugin)
