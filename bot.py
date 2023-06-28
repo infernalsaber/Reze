@@ -29,7 +29,7 @@ def setup_logging() -> None:
     # get root logger
     root_logger = logging.getLogger("")
     # create a rotating file handler with 1 backup file and 1 megabyte size
-    file_handler = logging.handlers.Rotatingfile_handler(
+    file_handler = logging.handlers.RotatingFileHandler(
         "./logs/log.txt", "w+", 1_000_000, 1, "UTF-8"
     )
     # create a default console handler
