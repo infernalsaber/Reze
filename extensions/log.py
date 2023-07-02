@@ -52,10 +52,10 @@ async def delete_log(event: hk.GuildMessageDeleteEvent):
     webhook = logger.bot.d.deleted_hook
     await webhook.execute(
         f"Message deleted by {author.mention} in {channel.mention}",
-        avatar_url=author.avatar_url,
-        embed=hk.Embed(
-            description=content, color=old_message.author.accent_color
-        ).set_author(name=author.username, icon=ava),
+        avatar_url=logger.bot.get_me().avatar_url,
+        embed=hk.Embed(description=content, color="92DDEA").set_author(
+            name=author.username, icon=ava
+        ),
     )
 
 
@@ -78,10 +78,10 @@ async def update_log(event: hk.GuildMessageUpdateEvent):
     webhook = logger.bot.d.updated_hook
     await webhook.execute(
         f"Message updated by {author.mention} in {channel.mention}",
-        avatar_url=author.avatar_url,
-        embed=hk.Embed(
-            description=content, color=old_message.author.accent_color
-        ).set_author(name=author.username, icon=ava),
+        avatar_url=logger.bot.get_me().avatar_url,
+        embed=hk.Embed(description=content, color="FEFE95").set_author(
+            name=author.username, icon=ava
+        ),
     )
 
 
