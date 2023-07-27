@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./downloads:/app/downloads
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - DANBOORU_KEY=${DANBOORU_KEY}
+      - DANBOORU_USER=${DANBOORU_USER}
+      - CLIENT_SECRET=${CLIENT_SECRET}
+      - CLIENT_ID=${CLIENT_ID}
+      - yt_key=${yt_key}
+      - removeBG_key=${removeBG_key}
+
+    restart: always
+

@@ -33,4 +33,5 @@ db.py
 extensions/smart.py
 extensions/wordcloud.py
 bebe.csv
+.env
 
